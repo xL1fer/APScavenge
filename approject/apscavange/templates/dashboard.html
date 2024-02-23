@@ -1,8 +1,23 @@
-{% extends "layout.html" %}
+{% extends "layout-nav.html" %}
+{% load static %}
+
+{% block custom_stylesheet %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block main_class %} class="mb-5"{% endblock %}
 
 {% block content %}
 
-<!--<div class="h-100 d-flex align-items-center justify-content-center">-->
-<h1 class="underlined mb-5">Dashboard</h1>
+<div class="sidebar">
+    <ul>
+        <a href="#"><li>Item1</li></a>
+        <a href="#"><li>Item2</li></a>
+        <a href="#"><li>Item3</li></a>
+    </ul>
+</div>
+<div class="mt-5">
+    <p class="page-indicator">APScavenge <b>> <span class="underlined">Dashboard</b></span><span id="sidebar-toggle-container"> > <button id="sidebar-toggle">Toggle Sidebar</button></p></span>
+</div>
 
 {% endblock %}

@@ -1,0 +1,51 @@
+/*
+    Dashboard styling
+*/
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    height: 100%;
+    width: 100px;
+    background-color: rgb(41, 41, 41);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.sidebar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sidebar ul a {
+    text-decoration: none;
+    color: white;
+}
+
+.sidebar ul li {
+    padding: 30px 30px;
+    cursor: pointer;
+}
+
+.sidebar ul li:hover {
+    color: #ef9a38;
+    background-color: rgb(20, 20, 20);
+    transition: 0.3s;
+}
+
+.sidebar-hidden {
+    visibility: hidden;
+    width: 0;
+}
+
+#sidebar-toggle {
+    border: 0;
+    background-color: white;
+    color: #ef9a38;
+    padding: 0;
+}
+
+#sidebar-toggle:hover {
+    text-decoration: underline;
+}

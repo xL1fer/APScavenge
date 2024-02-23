@@ -1,58 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-    <!-- Page setup -->
-    <head>
-        <!-- Required meta tags -->
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+{% extends "layout-base.html" %}
+{% load static %}
 
-        <!-- Bootstrap CSS -->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-        
-        {% load static %}
-        <link rel="icon" href="{% static 'img/aps.png' %}">
-        <link rel="stylesheet" href="{% static 'css/global.css' %}">
-        <link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% block custom_stylesheet %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}">
+{% endblock %}
 
-        <title>APScavenge</title>
-    </head>
-    <!-- Page content -->
-    <body class="img-bg">
-        <!-- <header> NOTE: we cannot create a <header> wrapper, otherwise sticky-top won't be applied -->
-        <!-- </header> -->
-        <main class="mt-2 mb-5">
-            <div class="login-box">
-                <img class="mb-3" src="{% static 'img/aps.png' %}" alt="aps-logo"/>
-                <p>You are accessing to the service:<br/><b>APScavenge</b></p>
-                <p style="color: red;" class="mt-4 mb-4">
-                    {% if login_message is not None %}
-                        {{ login_message }}
-                    {% endif %}
-                </p>
-                <p>
-                    <form method="post" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        <div><b>Username</b></div>
-                        <p>{{login_form.username}}</p>
-                        <div><b>Password</b></div>
-                        <p>{{login_form.password}}</p>
-                        <br/>
-                        <button type="submit">Login</button>
-                    </form>
-                    <a href="{% url 'index' %}"><button class="mt-3">Return</button></a>
-                </p>
-            </div>
-        </main>
-        <footer>
-            <div class="mt-5 mb-5">
-                APScavenge &copy; 2024
-            </div>
-        </footer>
+{% block body_class %} class="img-bg"{% endblock %}
 
-        <!-- Optional JavaScript -->
-        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-    </body>
-</html>
+{% block main_class %} class="mt-2 mb-5"{% endblock %}
+
+{% block content %}
+
+<div class="login-box">
+    <img class="mb-3" src="{% static 'img/aps.png' %}" alt="aps-logo"/>
+    <p>You are accessing to the service:<br/><b>APScavenge</b></p>
+    <p style="color: red;" class="mt-4 mb-4">
+        <!-- authentication messages -->
+        {% if request.session.auth_message|length > 0 %}
+            {{ request.session.auth_message }}
+        <!-- login messages -->
+        {% elif login_message is not None %}
+            {{ login_message }}
+        {% endif %}
+
+    </p>
+    <p>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div><b>Username</b></div>
+            <p>{{login_form.username}}</p>
+            <div><b>Password</b></div>
+            <p>{{login_form.password}}</p>
+            <br/>
+            <button type="submit">Login</button>
+        </form>
+        <a href="{% url 'index' %}"><button class="mt-3">Return</button></a>
+    </p>
+</div>
+
+{% endblock %}

@@ -14,6 +14,20 @@ from django.contrib.auth import authenticate, login, logout
 # Create your views here.
 
 #####################################
+#   Helper Functions                #
+#####################################
+
+def authentication_handler(request, auth_required=True):
+    if auth_required:
+        if not request.user.is_authenticated:
+            request.session['auth_message'] = 'The specified page requires authentication.'
+            return False
+
+    request.session['auth_message'] = ""
+
+    return True
+
+#####################################
 #   View Classes                    #
 #####################################
 
@@ -27,6 +41,7 @@ class LoginView(View):
 
     def post(self, request):
         assert isinstance(request, HttpRequest)
+        authentication_handler(request, False)
         
         login_form = LoginForm(request.POST)
         if login_form.is_valid():
@@ -48,6 +63,8 @@ class DashboardView(View):
 
     def get(self, request):
         assert isinstance(request, HttpRequest)
+        if not authentication_handler(request):
+            return redirect('login')
         
         return render(request, 'dashboard.html')
 
@@ -61,6 +78,8 @@ class InfrastructureView(View):
 
     def get(self, request):
         assert isinstance(request, HttpRequest)
+        if not authentication_handler(request):
+            return redirect('login')
         
         return render(request, 'infrastructure.html')
 
@@ -76,12 +95,14 @@ class InfrastructureView(View):
 def index_view(request):
     """Index page render handler"""
     assert isinstance(request, HttpRequest)
+    authentication_handler(request, False)
     
     return render(request, 'index.html')
 
 def logout_view(request):
     """Logout request handler"""
     assert isinstance(request, HttpRequest)
+    authentication_handler(request, False)
 
     logout(request)
     return redirect('index')
