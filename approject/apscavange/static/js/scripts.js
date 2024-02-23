@@ -5,6 +5,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Toggle sidebar visibility based on window width
     function toggleSidebarVisibility() {
+        if (sidebar == null) return;
+        
         if (window.innerWidth <= 1050) {
             sidebar.classList.add("sidebar-hidden");
             sidebarToggleContainer.classList.remove("sidebar-hidden");
@@ -19,12 +21,31 @@ document.addEventListener("DOMContentLoaded", function () {
     toggleSidebarVisibility();
 
     // Button event listener to the
-    sidebarToggle.addEventListener("click", function () {
-        sidebar.classList.toggle("sidebar-hidden");
-    });
+    if (sidebarToggle != null)
+    {
+        sidebarToggle.addEventListener("click", function () {
+            sidebar.classList.toggle("sidebar-hidden");
+        });
+    }
 
     // Eesize event listener to adjust sidebar visibility on window resize
     window.addEventListener("resize", function () {
         toggleSidebarVisibility();
+    });
+});
+
+window.addEventListener('scroll', function() {
+    var items = document.querySelectorAll('.navbar.second');
+    var scrollPosition = window.scrollY;
+
+    items.forEach(function(item) {
+        if (scrollPosition > 90) {
+            item.classList.remove("py-4");
+            item.classList.add("py-2");
+        }
+        else if (scrollPosition < 50) {
+            item.classList.add("py-4");
+            item.classList.remove("py-2");
+        }
     });
 });
