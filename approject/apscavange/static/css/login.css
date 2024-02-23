@@ -1,0 +1,37 @@
+/*
+    Login page styling
+*/
+
+.img-bg {
+    background: url("/static/img/placeholder.png") 50% no-repeat fixed;
+    background-size: cover;
+}
+
+.login-box {
+    width: 315px;
+    margin: auto;
+    background-color: white;
+    padding: 22px;
+    position: relative;
+    /*border: 1px solid black;*/
+    font-size: 12px;
+    line-height: 1.5;
+    min-height: 525px;
+}
+
+.login-box img {
+    width: 50px;
+}
+
+.login-box button {
+    width: 100%;
+    border: 0;
+    background-color: #ef9a38;
+    color: white;
+}
+
+.login-box input {
+    width: 100%;
+    border: 0;
+    background-color: #d9d9d9;
+}

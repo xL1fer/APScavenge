@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+    <!-- Page setup -->
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        
+        {% load static %}
+        <link rel="icon" href="{% static 'img/aps.png' %}">
+        <link rel="stylesheet" href="{% static 'css/global.css' %}">
+
+        <title>APScavenge</title>
+    </head>
+    <!-- Page content -->
+    <body>
+        <!-- <header> NOTE: we cannot create a <header> wrapper, otherwise sticky-top won't be applied -->
+        <nav class="navbar first navbar-expand">
+            <ul class="navbar-nav start-links">
+                <li class="nav-item pr-3 border-right">
+                    <a style="padding: 0; margin: 0" class="nav-link small" href="https://www.ua.pt/pt/noticias"><span>News</span></a>
+                </li>
+                <li class="nav-item pl-3">
+                    <a style="padding: 0; margin: 0" class="nav-link small" href="https://www.ua.pt/pt/agenda"><span>Agenda</span></a>
+                </li>
+            </ul>
+            <ul class="navbar-nav ml-auto">
+                {% if request.user.is_authenticated %}
+                <li class="nav-item">
+                    <a class="nav-link small" href="{% url 'logout' %}"><span>logout</span></a>
+                </li>
+                {% else %}
+                <li class="nav-item">
+                    <a class="nav-link small" href="{% url 'login' %}">
+                        <span class="mr-2">login</span>
+                        <svg width="10px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M224 256A128 128 0 1 0 224 0a128 128 0 1 0 0 256zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        <nav class="navbar second sticky-top navbar-expand-lg py-4">
+            <a class="navbar-brand" href="https://www.ua.pt/">
+                <svg id="prefix__logos_logo_ua_responsive" xmlns="http://www.w3.org/2000/svg" x="0" y="0" width="135" height="100%" viewBox="0 0 180 64" xml:space="preserve" fill="#FFFFFF"><style>.prefix__st0{fill:#FFFFFF}</style><g id="prefix__logo" transform="translate(-254.688 -218.73)"><g id="prefix__Grupo_1692" transform="translate(326.482 240.999)"><path id="prefix__Caminho_1126" class="prefix__st0" d="M9.2 13.7H7.1v-1.4c-.6 1-1.7 1.6-2.8 1.7-2.6 0-3.7-1.3-3.7-3.9V3.8h2.2v6.1c0 1.8.7 2.4 1.9 2.4 1.8 0 2.4-1.2 2.4-2.7V3.8h2.2l-.1 9.9z"></path><path id="prefix__Caminho_1127" class="prefix__st0" d="M11.1 3.8h2.1v1.5c.6-1.1 1.8-1.8 3.1-1.8 2.1 0 3.5 1.2 3.5 3.4v6.8h-2.2V7.5c0-1.6-.7-2.2-1.9-2.2-1.3 0-2.4 1.1-2.4 2.4V13.8h-2.2v-10z"></path><path id="prefix__Caminho_1128" class="prefix__st0" d="M21.8 0H24v2.1h-2.2V0zm0 3.8H24v9.9h-2.2V3.8z"></path><path id="prefix__Caminho_1129" class="prefix__st0" d="M25 3.8h2.4l2.5 7.6 2.4-7.6h2.3L31 13.7h-2.5L25 3.8z"></path><path id="prefix__Caminho_1130" class="prefix__st0" d="M37.3 9.3c-.2 1.5.9 2.8 2.3 2.9h.3c1.1.1 2.1-.6 2.4-1.7h2.1c-.4 2.2-2.3 3.6-4.4 3.5-3.1 0-4.9-2.2-4.9-5.2 0-2.8 1.9-5.2 4.8-5.2 3.1 0 5.1 2.8 4.7 5.8l-7.3-.1zm5.1-1.4c0-1.4-1.1-2.6-2.5-2.6s-2.6 1.1-2.6 2.5v.1h5.1z"></path><path id="prefix__Caminho_1131" class="prefix__st0" d="M45.9 3.8H48v1.9c.4-1.3 1.6-2.1 2.9-2.2.3 0 .6 0 .8.1v2.1c-.3-.1-.6-.1-.9-.1-1.5 0-2.7 1.2-2.7 3.4v4.7h-2.2V3.8z"></path><path id="prefix__Caminho_1132" class="prefix__st0" d="M53.9 10.5c.1 1.3 1.1 1.7 2.3 1.7.8 0 2.3-.2 2.2-1.3-.1-1.2-1.7-1.3-3.3-1.7C53.5 9 52 8.4 52 6.4c0-2.2 2.3-2.8 4.2-2.8 2 0 3.9.8 4.2 3.1H58c-.2-1-1.1-1.3-2-1.3-.6 0-1.8.2-1.8 1 0 1.1 1.6 1.2 3.2 1.6 1.6.4 3.2.9 3.2 2.9 0 2.4-2.4 3.2-4.4 3.2-2.5 0-4.4-1.1-4.4-3.5l2.1-.1z"></path><path id="prefix__Caminho_1133" class="prefix__st0" d="M61.9 0h2.2v2.1h-2.2V0zm0 3.8h2.2v9.9h-2.2V3.8z"></path><path id="prefix__Caminho_1134" class="prefix__st0" d="M75.5 13.7h-2.1v-1.3c-.6 1.1-1.8 1.7-3.1 1.6-3.1 0-4.7-2.3-4.7-5.3 0-3.6 2.1-5.2 4.3-5.2 1.3-.1 2.5.5 3.3 1.6V0h2.2l.1 13.7zm-4.9-1.4c2 0 2.8-1.8 2.8-3.5 0-2.2-1.1-3.5-2.7-3.5-2.1 0-2.8 1.8-2.8 3.6-.1 1.7.8 3.4 2.7 3.4z"></path><path id="prefix__Caminho_1135" class="prefix__st0" d="M85.8 11.5c0 .5.1.8.5.8h.5v1.5c-.4.1-.8.2-1.3.2-.9 0-1.5-.3-1.7-1.2-1 .8-2.2 1.2-3.4 1.2-1.8 0-3.4-1-3.4-2.9 0-2.5 2-2.9 3.8-3.1 1.6-.3 3-.1 3-1.4 0-1.1-1.2-1.3-2.1-1.3-1.2 0-2.1.5-2.2 1.6h-2.2c.2-2.6 2.3-3.3 4.5-3.3 1.9 0 4 .8 4 2.9v5zm-2.2-2.8c-.9.4-1.8.6-2.7.6-.9.2-1.8.5-1.8 1.7 0 1 1.2 1.3 2 1.3 1 0 2.5-.5 2.5-1.9V8.7z"></path><path id="prefix__Caminho_1136" class="prefix__st0" d="M97.2 13.7h-2.1v-1.3c-.6 1.1-1.8 1.7-3.1 1.6-3.1 0-4.7-2.3-4.7-5.3 0-3.6 2.1-5.2 4.3-5.2 1.3-.1 2.5.5 3.3 1.6V0h2.2v13.7zm-5-1.4c2 0 2.8-1.8 2.8-3.5 0-2.2-1.1-3.5-2.7-3.5-2.1 0-2.8 1.8-2.8 3.6 0 1.7.8 3.4 2.7 3.4z"></path><path id="prefix__Caminho_1137" class="prefix__st0" d="M100.9 9.3c-.2 1.5.9 2.8 2.3 2.9h.3c1.1.1 2.1-.6 2.4-1.7h2.1c-.5 2.1-2.4 3.5-4.5 3.4-3.1 0-4.9-2.2-4.9-5.2 0-2.8 1.8-5.2 4.8-5.2 3.1 0 5.1 2.8 4.7 5.8h-7.2zm5.1-1.4c0-1.4-1.1-2.6-2.5-2.6s-2.6 1.1-2.6 2.5v.1h5.1z"></path><path id="prefix__Caminho_1138" class="prefix__st0" d="M9.8 32.8h-2v-1.3c-.6 1.1-1.8 1.7-3.1 1.6C1.5 33 0 30.7 0 27.7c0-3.6 2.1-5.2 4.3-5.2 1.3-.1 2.5.5 3.3 1.6V19h2.2v13.8zm-4.9-1.5c2 0 2.8-1.8 2.8-3.5 0-2.2-1.1-3.5-2.7-3.5-2.1 0-2.8 1.8-2.8 3.6 0 1.7.8 3.4 2.7 3.4z"></path><path id="prefix__Caminho_1139" class="prefix__st0" d="M13.5 28.4c-.2 1.5.9 2.8 2.3 2.9h.3c1.1.1 2.1-.6 2.4-1.7h2.1c-.5 2.1-2.4 3.5-4.5 3.4-3.1 0-4.9-2.2-4.9-5.2 0-2.8 1.8-5.3 4.8-5.3 3.1 0 5.1 2.8 4.7 5.8l-7.2.1zm5.2-1.5c0-1.4-1.1-2.6-2.5-2.6s-2.6 1.1-2.6 2.5v.1h5.1z"></path><path id="prefix__Caminho_1140" class="prefix__st0" d="M35.4 30.6c0 .5.1.8.5.8h.5v1.5c-.4 0-.8.1-1.3.1-.9 0-1.5-.3-1.7-1.2-1 .8-2.2 1.2-3.4 1.2-1.8 0-3.4-1-3.4-2.9 0-2.5 2-2.9 3.8-3.1 1.6-.3 3-.1 3-1.4 0-1.1-1.2-1.3-2.1-1.3-1.2 0-2.1.5-2.2 1.6h-2.2c.2-2.6 2.3-3.3 4.5-3.3 1.9 0 4 .8 4 2.9v5.1zm-2.2-2.8c-.9.4-1.8.6-2.7.6-.9.2-1.8.5-1.8 1.7 0 1 1.2 1.3 2 1.3 1 0 2.5-.5 2.5-1.9v-1.7z"></path><path id="prefix__Caminho_1141" class="prefix__st0" d="M36.4 22.8h2.4l2.5 7.6 2.4-7.6H46l-3.6 9.9H40l-3.6-9.9z"></path><path id="prefix__Caminho_1142" class="prefix__st0" d="M48.7 28.4c-.2 1.4.9 2.8 2.3 2.9h.4c1.1.1 2.1-.6 2.4-1.7h2.1c-.5 2.1-2.4 3.5-4.5 3.4-3.1 0-4.9-2.2-4.9-5.2 0-2.8 1.8-5.3 4.8-5.3 3.1 0 5.1 2.8 4.7 5.8l-7.3.1zm5.1-1.5c0-1.4-1.1-2.6-2.5-2.6s-2.6 1.1-2.6 2.5v.1h5.1z"></path><path id="prefix__Caminho_1143" class="prefix__st0" d="M57.3 19h2.2v2.1h-2.2V19zm0 3.8h2.2v9.9h-2.2v-9.9z"></path><path id="prefix__Caminho_1144" class="prefix__st0" d="M61.5 22.8h2.1v1.9c.4-1.3 1.6-2.1 2.9-2.2.3 0 .6 0 .8.1v2.1c-.3-.1-.6-.1-.9-.1-1.5 0-2.7 1.2-2.7 3.4v4.7h-2.2v-9.9z"></path><path id="prefix__Caminho_1145" class="prefix__st0" d="M67.1 27.8c0-3 1.8-5.2 5-5.2s5 2.2 5 5.2c0 3.1-1.8 5.2-5 5.2s-5-2.2-5-5.2zm7.9 0c0-1.7-.9-3.5-2.8-3.5s-2.8 1.8-2.8 3.5.9 3.5 2.8 3.5 2.8-1.8 2.8-3.5z"></path></g><path id="prefix__Caminho_1146" d="M314.1 232c.1-4.1-3-7.7-7.1-8.2h-.4c-.7 0-1.4.3-1.9.9l-6.4 7.7c-2.1 2-5.4 2-7.4-.1-.9-.9-1.4-2.2-1.5-3.5 0-5.3-4.2-9.7-9.5-10-.5 0-.9.4-.9.9v9.1c0 2.8-2.3 5.1-5.1 5.1-1.4 0-2.7-.5-3.7-1.5l-6.4-7.7c-.5-.6-1.1-.9-1.9-.9h-.4c-4.1.6-7.1 4.1-7.1 8.2v41.6c0 4.6 3.9 8.4 8.5 8.3h42.5c4.6 0 8.4-3.7 8.5-8.3l.2-41.6zm-8.5 40.3c0 .7-.6 1.3-1.4 1.3h-11.4c-2.2 0-4.2 1.2-5.2 3.2-.5.8-1.4 1.3-2.3 1.3h-1c-1 0-1.9-.6-2.4-1.5-1-1.9-3-3-5.1-3h-12.3c-.7 0-1.3-.6-1.4-1.3v-16.2c0-.7.5-1.3 1.3-1.4h12.4c2.2 0 4.2 1.2 5.2 3.2.5.8 1.4 1.3 2.3 1.3h1c1 0 1.9-.6 2.4-1.4 1-1.9 3-3 5.1-3h11.4c.7 0 1.3.6 1.3 1.3l.1 16.2z" fill-rule="evenodd" clip-rule="evenodd" fill="#FFFFFF"></path></g></svg>
+            </a>
+            <a class="navbar-brand" href="{% url 'index' %}"><img width="80px" style="fill: white;" src="{% static 'img/aps.svg' %}" alt="aps-logo"></a>
+            <a class="navbar-toggler" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <svg width="20" height="100%" aria-hidden="true" focusable="false" data-prefix="far" data-icon="bars" class="svg-inline--fa fa-bars fa-w-14 fa-lg " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg>
+            </a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+                    {% with request.resolver_match.url_name as url_name %}
+                    <li class="nav-item{% if url_name == 'index' %} active-page{% endif %}">
+                        <a class="nav-link" href="{% url 'index' %}">HOME</a>
+                    </li>
+                    <li class="nav-item{% if url_name == 'dashboard' %} active-page{% endif %}">
+                        <a class="nav-link" href="{% url 'dashboard' %}">DASHBOARD</a>
+                    </li>
+                    <li class="nav-item{% if url_name == 'infrastructure' %} active-page{% endif %}">
+                        <a class="nav-link" href="{% url 'infrastructure' %}">INFRASTRUCTURE</a>
+                    </li>
+                    {% endwith %}
+                </ul>
+            </div>
+        </nav>
+        <!-- </header> -->
+        <main class="mt-5 mb-5">
+            {% block content %} {% endblock %}
+        </main>
+        <footer>
+            <div class="mt-5 mb-5">
+                APScavenge &copy; 2024
+            </div>
+        </footer>
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </body>
+</html>
