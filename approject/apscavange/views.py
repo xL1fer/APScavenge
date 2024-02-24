@@ -50,7 +50,6 @@ class LoginView(View):
             password = login_form.cleaned_data.get('password')
             
             user = authenticate(username=username, password=password)
-            print(user)
             if user is not None:
                 login(request, user)
 
