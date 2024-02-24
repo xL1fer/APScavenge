@@ -20,7 +20,7 @@ from django.contrib import admin
 from django.urls import path
 
 # app-specific imports
-from apscavange import views
+from apscavenge import views
 
 #####################################
 #   URL Patterns                    #
@@ -32,5 +32,8 @@ urlpatterns = [
     path('login', views.LoginView.as_view(), name="login"),
     path('logout', views.logout_view, name="logout"),
     path('dashboard', views.DashboardView.as_view(), name="dashboard"),
-    path('infrastructure', views.InfrastructureView.as_view(), name="infrastructure")
+    path('infrastructure', views.InfrastructureView.as_view(), name="infrastructure"),
+
+    path('insertdummydata', views.insert_dummy_data, name="insertdummydata"),
+    path('deletedummydata', views.delete_dummy_data, name="deletedummydata"),
 ]

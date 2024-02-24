@@ -1,0 +1,87 @@
+{% extends "layout-nav.html" %}
+{% load static %}
+
+{% block custom_stylesheet %}
+<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+{% endblock %}
+
+{% block title_ext %}Dashboard - {% endblock %}
+
+{% block main_class %} class="mb-5"{% endblock %}
+
+{% block content %}
+
+<div class="sidebar sidebar-hidden">
+    <ul>
+        <a href="#"><li>Item1</li></a>
+        <a href="#"><li>Item2</li></a>
+        <a href="#"><li>Item3</li></a>
+        <a id="a-sidebar-toggle"><li style="margin-top: 100%">Close</li></a>
+    </ul>
+</div>
+<div class="mt-5">
+    <p class="page-indicator">APScavenge <b>> <span class="underlined">Dashboard</b></span><span id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></p></span>
+
+    {% if p_data %}
+
+    <div class="table-responsive">
+        <table class="table table-hover custom-table">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">email</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in p_data %}
+                <tr>
+                    <th scope="row">1</th>
+                    <td>{{ data.email }}</td>
+                </tr> 
+                {% endfor %}
+            </tbody>
+            <thead>
+                <tr>
+                    <td colspan="4">Results per page: </td>
+                </tr>
+            </thead>
+        </table>
+    </div>
+
+    {% endif %}
+
+    <!--
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                <th scope="col">First</th>
+                <th scope="col">Last</th>
+                <th scope="col">Handle</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th scope="row">1</th>
+                <td>Mark</td>
+                <td>Otto</td>
+                <td>@mdo</td>
+            </tr>
+            <tr>
+                <th scope="row">2</th>
+                <td>Jacob</td>
+                <td>Thornton</td>
+                <td>@fat</td>
+            </tr>
+            <tr>
+                <th scope="row">3</th>
+                <td>Larry</td>
+                <td>the Bird</td>
+                <td>@twitter</td>
+            </tr>
+        </tbody>
+    </table>
+    -->
+</div>
+
+{% endblock %}

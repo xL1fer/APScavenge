@@ -7,7 +7,7 @@ from django.db.models.fields.related import OneToOneField
 # Create your models here.
 
 class Seizure(models.Model):
-    email = models.CharField(primary_key=True, max_length=128)
+    email = models.CharField(primary_key=True, max_length=128, null=False, blank=False)
 
 class InfoHistory(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -22,7 +22,7 @@ class PasswordHash(models.Model):
     asleap = models.CharField(max_length=256, null=True, blank=True)
     jtr = models.CharField(max_length=256, null=True, blank=True)
     hashcat = models.CharField(max_length=256, null=True, blank=True)
-    info_history_id = models.OneToOneField(InfoHistory, on_delete=models.CASCADE) # OneToOneField ensures that each "PasswordHash" table entry must be associated to distinct "InfoHistory" entries
+    info_history = models.OneToOneField(InfoHistory, on_delete=models.CASCADE) # OneToOneField ensures that each "PasswordHash" table entry must be associated to distinct "InfoHistory" entries
 
 #class User(AbstractUser):
 #    pass

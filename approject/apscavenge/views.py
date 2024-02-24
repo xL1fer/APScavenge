@@ -8,6 +8,9 @@ from .models import Seizure, InfoHistory, PasswordHash#, User
 
 from .forms import LoginForm
 
+# database objects paginator
+from django.core.paginator import Paginator
+
 # import Django built in functions
 from django.contrib.auth import authenticate, login, logout
 
@@ -65,7 +68,19 @@ class DashboardView(View):
         if not authentication_handler(request):
             return redirect('login')
         
-        return render(request, 'dashboard.html')
+        p_data = None
+        
+        s = Seizure.objects.all()
+        p = Paginator(s, 3)
+        #print(p.count)
+        #print(p.page_range)
+        #print(p.page(1).object_list)
+
+        p_data = p.page(1).object_list
+
+        print(p_data)
+        
+        return render(request, 'dashboard.html', {"p_data": p_data})
 
     def post(self, request):
         assert isinstance(request, HttpRequest)
@@ -105,3 +120,34 @@ def logout_view(request):
 
     logout(request)
     return redirect('index')
+
+def insert_dummy_data(request):
+    """Fill database with dummy data"""
+    assert isinstance(request, HttpRequest)
+    if not authentication_handler(request):
+        return HttpResponse('<h3>You must be authenticated.<h3>')
+    
+    dummy_count = 5
+
+    for i in range(dummy_count):
+        Seizure(email=f"dummyemail{i}@realm").save()
+
+    for i in range(dummy_count):
+        info_history = InfoHistory(user_type=f"Dummy Type {i}", user_info="No info provided.", area=f"Dummy Area {i}", seizure_email_id=f"dummyemail{i}@realm")
+        info_history.save()
+
+        if i % 2:
+            print(f"Inserting password hash for info history object {info_history}")
+            PasswordHash(asleap=f"asleap_dummy_hash_{info_history.id}", jtr=f"jtr_dummy_hash_{info_history.id}", hashcat=f"hashcat_dummy_hash_{info_history.id}", info_history_id=info_history.id).save()
+
+    return HttpResponse('<h3>Dummy data inserted.<h3>')
+
+def delete_dummy_data(request):
+    """Delete dummy data from database"""
+    assert isinstance(request, HttpRequest)
+    if not authentication_handler(request):
+        return HttpResponse('<h3>You must be authenticated.<h3>')
+    
+    Seizure.objects.all().delete()
+
+    return HttpResponse('<h3>Dummy data deleted.<h3>')

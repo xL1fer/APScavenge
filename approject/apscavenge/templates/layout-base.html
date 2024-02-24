@@ -15,15 +15,15 @@
         <script src="{% static 'js/scripts.js' %}" defer></script>
         {% block custom_stylesheet %}{% endblock %}
         
-        <title>APScavenge</title>
+        <title>{% block title_ext %}{% endblock %}APScavenge</title>
     </head>
     <!-- Page content -->
     <body{% block body_class %}{% endblock %}>
         <!-- <header> NOTE: we cannot create a <header> wrapper, otherwise sticky-top won't be applied -->
-        {% block nav_content %} {% endblock %}
+        {% block nav_content %}{% endblock %}
         <!-- </header> -->
         <main{% block main_class %}{% endblock %}>
-            {% block content %} {% endblock %}
+            {% block content %}{% endblock %}
         </main>
         <footer>
             <div class="mt-5 mb-4 footer-last">
