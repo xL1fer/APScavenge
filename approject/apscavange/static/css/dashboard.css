@@ -39,13 +39,13 @@
     width: 0;
 }
 
-#sidebar-toggle {
+#button-sidebar-toggle {
     border: 0;
     background-color: white;
     color: #ef9a38;
     padding: 0;
 }
 
-#sidebar-toggle:hover {
+#button-sidebar-toggle:hover {
     text-decoration: underline;
 }

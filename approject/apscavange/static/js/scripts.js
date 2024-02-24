@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     const sidebar = document.querySelector(".sidebar");
-    const sidebarToggle = document.getElementById("sidebar-toggle");
+    const buttonSidebarToggle = document.getElementById("button-sidebar-toggle");
+    const aSidebarToggle = document.getElementById("a-sidebar-toggle");
     const sidebarToggleContainer = document.getElementById("sidebar-toggle-container");
 
     // Toggle sidebar visibility based on window width
@@ -9,10 +10,12 @@ document.addEventListener("DOMContentLoaded", function () {
         
         if (window.innerWidth <= 1050) {
             sidebar.classList.add("sidebar-hidden");
+            aSidebarToggle.classList.remove("sidebar-hidden");
             sidebarToggleContainer.classList.remove("sidebar-hidden");
         }
         else {
             sidebar.classList.remove("sidebar-hidden");
+            aSidebarToggle.classList.add("sidebar-hidden");
             sidebarToggleContainer.classList.add("sidebar-hidden");
         }
     }
@@ -20,15 +23,19 @@ document.addEventListener("DOMContentLoaded", function () {
     // Set initial visibility
     toggleSidebarVisibility();
 
-    // Button event listener to the
-    if (sidebarToggle != null)
+    // Toggle event listeners
+    if (buttonSidebarToggle != null && aSidebarToggle != null)
     {
-        sidebarToggle.addEventListener("click", function () {
+        buttonSidebarToggle.addEventListener("click", function () {
+            sidebar.classList.toggle("sidebar-hidden");
+        });
+
+        aSidebarToggle.addEventListener("click", function () {
             sidebar.classList.toggle("sidebar-hidden");
         });
     }
 
-    // Eesize event listener to adjust sidebar visibility on window resize
+    // Resize event listener to adjust sidebar visibility on window resize
     window.addEventListener("resize", function () {
         toggleSidebarVisibility();
     });
