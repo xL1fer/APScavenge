@@ -1,18 +1,11 @@
 from django.shortcuts import render, redirect
-
 from django.views.generic import View   # django generic View class
-
 from django.http import HttpRequest, HttpResponse
+from django.core.paginator import Paginator # database objects paginator
+from django.contrib.auth import authenticate, login, logout # import Django built in functions
 
 from .models import Seizure, InfoHistory, PasswordHash#, User
-
-from .forms import LoginForm
-
-# database objects paginator
-from django.core.paginator import Paginator
-
-# import Django built in functions
-from django.contrib.auth import authenticate, login, logout
+from .forms import LoginForm, PageItemsSelectForm, SearchEmailForm
 
 # Create your views here.
 
@@ -29,6 +22,49 @@ def authentication_handler(request, auth_required=True):
     request.session['auth_message'] = ""
 
     return True
+
+def pagination_handler(request, search_email_form, page_items_select_form):
+    """
+    cur_page = request.GET.get('page', 1)
+    try:
+        cur_page = int(cur_page)
+    except:
+        cur_page = 1
+    """
+
+    # TODO: maybe ensure that when the items per page change, the current page resets or at least immediately
+    #       changes to the maximum it can get
+
+    cur_page = int(page_items_select_form.fields['cur_page'].initial)
+    items_per_page = int(page_items_select_form.fields['page_items'].initial)
+
+    if page_items_select_form.is_valid():
+        cur_page = int(page_items_select_form.cleaned_data['cur_page'])
+        items_per_page = int(page_items_select_form.cleaned_data['page_items'])
+
+    objects = None
+
+    # NOTE: objects type will depend on the selected table
+    if search_email_form.is_valid():
+        objects = Seizure.objects.filter(email__contains=search_email_form.cleaned_data['search_email'])
+    else:
+        objects = Seizure.objects.all()
+
+    paginator = Paginator(objects, items_per_page)
+
+    if (cur_page < paginator.page_range.start):
+        cur_page = paginator.page_range.start
+    elif (cur_page >= paginator.page_range.stop):
+        cur_page = paginator.page_range.stop - 1
+
+    table_data = {}
+    table_data["items_start"] = (cur_page - 1) * items_per_page + 1
+    table_data["items_stop"] = cur_page * items_per_page if cur_page * items_per_page < paginator.count else paginator.count
+    table_data["items_count"] = paginator.count
+    table_data["items_data"] = paginator.page(cur_page).object_list
+    table_data["max_page"] = paginator.page_range.stop - 1
+
+    return table_data
 
 #####################################
 #   View Classes                    #
@@ -68,24 +104,26 @@ class DashboardView(View):
         if not authentication_handler(request):
             return redirect('login')
         
-        p_data = None
+        search_email_form = SearchEmailForm()
+        page_items_select_form = PageItemsSelectForm()
+        table_data = pagination_handler(request, search_email_form, page_items_select_form)
         
-        s = Seizure.objects.all()
-        p = Paginator(s, 3)
-        #print(p.count)
-        #print(p.page_range)
-        #print(p.page(1).object_list)
-
-        p_data = p.page(1).object_list
-
-        print(p_data)
-        
-        return render(request, 'dashboard.html', {"p_data": p_data})
+        return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_email_form": search_email_form})
 
     def post(self, request):
         assert isinstance(request, HttpRequest)
+        if not authentication_handler(request):
+            return redirect('login')
+
+        search_email_form = SearchEmailForm(request.POST)
+        page_items_select_form = PageItemsSelectForm(request.POST)
+        table_data = pagination_handler(request, search_email_form, page_items_select_form)
+
+        # ajax request, return only the table html
+        if (request.POST.get("ajaxTableUpdate") == "True"):
+            return render(request, 'dashboard_table.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_email_form": search_email_form})
         
-        return HttpResponse('Still nothing')
+        return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_email_form": search_email_form})
     
 class InfrastructureView(View):
     """Dashboard page render handler"""
@@ -127,17 +165,17 @@ def insert_dummy_data(request):
     if not authentication_handler(request):
         return HttpResponse('<h3>You must be authenticated.<h3>')
     
-    dummy_count = 5
+    dummy_count = 50
 
     for i in range(dummy_count):
-        Seizure(email=f"dummyemail{i}@realm").save()
+        Seizure(email=f"dummy{i}@realm").save()
 
     for i in range(dummy_count):
-        info_history = InfoHistory(user_type=f"Dummy Type {i}", user_info="No info provided.", area=f"Dummy Area {i}", seizure_email_id=f"dummyemail{i}@realm")
+        info_history = InfoHistory(user_type=f"Dummy Type {i}", user_info="No info provided.", area=f"Dummy Area {i}", seizure_email_id=f"dummy{i}@realm")
         info_history.save()
 
         if i % 2:
-            print(f"Inserting password hash for info history object {info_history}")
+            #print(f"Inserting password hash for info history object {info_history}")
             PasswordHash(asleap=f"asleap_dummy_hash_{info_history.id}", jtr=f"jtr_dummy_hash_{info_history.id}", hashcat=f"hashcat_dummy_hash_{info_history.id}", info_history_id=info_history.id).save()
 
     return HttpResponse('<h3>Dummy data inserted.<h3>')

@@ -42,8 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 window.addEventListener('scroll', function() {
-    var items = document.querySelectorAll('.navbar.second');
-    var scrollPosition = window.scrollY;
+    let items = document.querySelectorAll('.navbar.second');
+    let scrollPosition = window.scrollY;
 
     items.forEach(function(item) {
         if (scrollPosition > 90) {
@@ -56,3 +56,16 @@ window.addEventListener('scroll', function() {
         }
     });
 });
+
+function changeTablePage(offset) {
+    let currentPageField = document.getElementById('form-current-page');
+    let maxPageField = document.getElementById('form-max-page');
+    let currentPage = parseInt(currentPageField.value) || 1;
+    let maxPage = parseInt(maxPageField.value) || 1;
+    currentPage = Math.min(currentPage, maxPage);  // Ensure page is not more than max page
+    currentPage += offset;
+    currentPage = Math.max(1, currentPage);  // Ensure page is not less than 1
+    currentPageField.value = currentPage;
+
+    //document.getElementById('dashboard-table-form').submit();
+}

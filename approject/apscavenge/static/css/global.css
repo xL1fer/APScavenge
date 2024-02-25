@@ -105,6 +105,7 @@ main {
 .page-indicator {
     line-height: 40px;
     margin-bottom: 40px;
+    font-size: 15px;
 }
 
 .underlined {
