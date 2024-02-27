@@ -63,6 +63,7 @@ def pagination_handler(request, search_email_form, page_items_select_form):
     table_data["items_count"] = paginator.count
     table_data["items_data"] = paginator.page(cur_page).object_list
     table_data["max_page"] = paginator.page_range.stop - 1
+    table_data["columns"] = [f.name for f in Seizure._meta.get_fields() if not f.is_relation or f.one_to_one]
 
     return table_data
 

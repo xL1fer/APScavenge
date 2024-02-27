@@ -1,17 +1,19 @@
-<form class="custom-input" method="post" enctype="multipart/form-data" id="dashboard-table-form">
+<form method="post" enctype="multipart/form-data" id="dashboard-table-form">
     {% csrf_token %}
 
-    <span style="white-space: nowrap;">
+    <span class="input-custom" style="white-space: nowrap;">
         {{ search_email_form.search_email }}
         <svg style="position:relative; left: -40px;" width="20" fill="black" aria-hidden="true" focusable="false" data-prefix="fal" data-icon="magnifying-glass" class="svg-inline--fa fa-magnifying-glass " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M384 208A176 176 0 1 0 32 208a176 176 0 1 0 352 0zM343.3 366C307 397.2 259.7 416 208 416C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208c0 51.7-18.8 99-50 135.3L507.3 484.7c6.2 6.2 6.2 16.4 0 22.6s-16.4 6.2-22.6 0L343.3 366z"></path></svg>
     </span>
 
     <div {% if table_data.items_stop == 0 %}style="visibility: hidden;"{% endif %} class="table-responsive">
-        <table class="table table-hover custom-table">
+        <table class="table table-hover table-custom">
             <thead>
                 <tr>
                     <th scope="col">#</th>
-                    <th scope="col">email</th>
+                    {% for column in table_data.columns %}
+                    <th scope="col">{{ column }}</th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody>
