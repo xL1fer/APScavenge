@@ -33,7 +33,7 @@ def authentication_handler(request, auth_required=True):
 
     return True
 
-def pagination_handler(request, model_class, search_table_form, page_items_select_form):
+def table_pagination_handler(request, model_class, search_table_form, page_items_select_form):
     """
     cur_page = request.GET.get('page', 1)
     try:
@@ -42,7 +42,7 @@ def pagination_handler(request, model_class, search_table_form, page_items_selec
         cur_page = 1
     """
 
-    # TODO: reset page counter when the items per page change?
+    # TODO: reset cur_page when items_per_page change?
 
     cur_page = int(page_items_select_form.fields['cur_page'].initial)
     items_per_page = int(page_items_select_form.fields['page_items'].initial)
@@ -63,8 +63,10 @@ def pagination_handler(request, model_class, search_table_form, page_items_selec
         search_table_form.fields['filter_field'].choices = [(filter_field, filter_field)]
     
     if search_table_form.is_valid():
-        if search_table_form.cleaned_data['filter_field'] in table_data["fields"]:
-            filter_params = {f"{search_table_form.cleaned_data['filter_field']}__contains": search_table_form.cleaned_data['search_field']}
+        filter_field = search_table_form.cleaned_data['filter_field']
+        search_field = search_table_form.cleaned_data['search_field']
+        if filter_field in table_data["fields"]:
+            filter_params = {f"{filter_field}__contains": search_field}
             objects = model_class.objects.filter(**filter_params)
         else:
             objects = model_class.objects.all()
@@ -126,7 +128,7 @@ class DashboardView(View):
         
         search_table_form = SearchTableForm()
         page_items_select_form = PageItemsSelectForm()
-        table_data = pagination_handler(request, Seizure, search_table_form, page_items_select_form)
+        table_data = table_pagination_handler(request, Seizure, search_table_form, page_items_select_form)
         
         return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
 
@@ -137,7 +139,7 @@ class DashboardView(View):
 
         search_table_form = SearchTableForm(request.POST)
         page_items_select_form = PageItemsSelectForm(request.POST)
-        table_data = pagination_handler(request, Seizure, search_table_form, page_items_select_form)
+        table_data = table_pagination_handler(request, Seizure, search_table_form, page_items_select_form)
 
         # ajax request, return only the table html
         if (request.POST.get("ajaxTableUpdate") == "True"):
