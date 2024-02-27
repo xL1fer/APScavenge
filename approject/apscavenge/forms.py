@@ -22,5 +22,9 @@ class PageItemsSelectForm(forms.Form):
     #page_items.widget.attrs.update(onChange="form.submit();")
 
 
-class SearchEmailForm(forms.Form):
-    search_email = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Search for email'}), required=False)
+class SearchTableForm(forms.Form):
+    filter_field = forms.ChoiceField()
+
+    search_field = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Search'}), required=False)
+    #search_email = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Filter by email'}), required=False)
+    #search_id = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Filter by id'}), required=False)

@@ -5,7 +5,7 @@ from django.core.paginator import Paginator # database objects paginator
 from django.contrib.auth import authenticate, login, logout # import Django built in functions
 
 from .models import Seizure, InfoHistory, PasswordHash#, User
-from .forms import LoginForm, PageItemsSelectForm, SearchEmailForm
+from .forms import LoginForm, PageItemsSelectForm, SearchTableForm
 
 # Create your views here.
 
@@ -33,7 +33,7 @@ def authentication_handler(request, auth_required=True):
 
     return True
 
-def pagination_handler(request, model_class, search_email_form, page_items_select_form):
+def pagination_handler(request, model_class, search_table_form, page_items_select_form):
     """
     cur_page = request.GET.get('page', 1)
     try:
@@ -53,9 +53,21 @@ def pagination_handler(request, model_class, search_email_form, page_items_selec
 
     objects = None
 
-    # NOTE: objects type will depend on the selected table
-    if search_email_form.is_valid():
-        objects = model_class.objects.filter(email__contains=search_email_form.cleaned_data['search_email'])
+    table_data = {}
+    table_data["fields"] = [f.name for f in model_class._meta.get_fields() if not f.is_relation and not f.one_to_one]
+    
+    # NOTE: Since the search_table_form.filter_field select has no default values, as they are only set directly in the dashboard_table.html template,
+    #       we need to set them here, otherwise the form is considered invalid for cona values that do not correspond to any default
+    filter_field = request.POST.get('filter_field')
+    if filter_field in table_data["fields"]:    # Ensure that the filter_field is not forged
+        search_table_form.fields['filter_field'].choices = [(filter_field, filter_field)]
+    
+    if search_table_form.is_valid():
+        if search_table_form.cleaned_data['filter_field'] in table_data["fields"]:
+            filter_params = {f"{search_table_form.cleaned_data['filter_field']}__contains": search_table_form.cleaned_data['search_field']}
+            objects = model_class.objects.filter(**filter_params)
+        else:
+            objects = model_class.objects.all()
     else:
         objects = model_class.objects.all()
 
@@ -66,13 +78,11 @@ def pagination_handler(request, model_class, search_email_form, page_items_selec
     elif (cur_page >= paginator.page_range.stop):
         cur_page = paginator.page_range.stop - 1
 
-    table_data = {}
     table_data["items_start"] = (cur_page - 1) * items_per_page + 1
     table_data["items_stop"] = cur_page * items_per_page if cur_page * items_per_page < paginator.count else paginator.count
     table_data["items_count"] = paginator.count
     table_data["items_data"] = paginator.page(cur_page).object_list
     table_data["max_page"] = paginator.page_range.stop - 1
-    table_data["columns"] = [f.name for f in model_class._meta.get_fields() if not f.is_relation and not f.one_to_one]
 
     return table_data
 
@@ -114,26 +124,26 @@ class DashboardView(View):
         if not authentication_handler(request):
             return redirect('login')
         
-        search_email_form = SearchEmailForm()
+        search_table_form = SearchTableForm()
         page_items_select_form = PageItemsSelectForm()
-        table_data = pagination_handler(request, Seizure, search_email_form, page_items_select_form)
+        table_data = pagination_handler(request, Seizure, search_table_form, page_items_select_form)
         
-        return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_email_form": search_email_form})
+        return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
 
     def post(self, request):
         assert isinstance(request, HttpRequest)
         if not authentication_handler(request):
             return redirect('login')
 
-        search_email_form = SearchEmailForm(request.POST)
+        search_table_form = SearchTableForm(request.POST)
         page_items_select_form = PageItemsSelectForm(request.POST)
-        table_data = pagination_handler(request, Seizure, search_email_form, page_items_select_form)
+        table_data = pagination_handler(request, Seizure, search_table_form, page_items_select_form)
 
         # ajax request, return only the table html
         if (request.POST.get("ajaxTableUpdate") == "True"):
-            return render(request, 'dashboard_table.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_email_form": search_email_form})
+            return render(request, 'dashboard_table.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
         
-        return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_email_form": search_email_form})
+        return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
     
 class InfrastructureView(View):
     """Dashboard page render handler"""
