@@ -20,13 +20,15 @@
                 {% for data in table_data.items_data %}
                 <tr>
                     <th scope="row">{{ forloop.counter0|add:table_data.items_start }}</th>
-                    <td>{{ data.email }}</td>
-                </tr> 
+                    {% for column in table_data.columns %}
+                    <td>{{ data|get_value:column }}</td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
             </tbody>
             <thead>
                 <tr>
-                    <td colspan="4">
+                    <td colspan="{{ table_data.columns|length|add:1 }}">
                         Results per page:
                         <span class="mr-4">
                             {{ page_items_select_form.page_items }}

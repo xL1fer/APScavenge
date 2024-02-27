@@ -31,6 +31,7 @@
 
 .sidebar ul li {
     padding: 30px 30px;
+    text-align: center;
     cursor: pointer;
 }
 

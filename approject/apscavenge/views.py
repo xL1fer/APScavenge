@@ -9,8 +9,18 @@ from .forms import LoginForm, PageItemsSelectForm, SearchEmailForm
 
 # Create your views here.
 
+from django.template.defaulttags import register
+
 #####################################
-#   Helper Functions                #
+# Custom Django Template Filters    #
+#####################################
+
+@register.filter
+def get_value(dictionary, key):
+    return getattr(dictionary, key)
+
+#####################################
+# Helper Functions                  #
 #####################################
 
 def authentication_handler(request, auth_required=True):
@@ -23,7 +33,7 @@ def authentication_handler(request, auth_required=True):
 
     return True
 
-def pagination_handler(request, search_email_form, page_items_select_form):
+def pagination_handler(request, model_class, search_email_form, page_items_select_form):
     """
     cur_page = request.GET.get('page', 1)
     try:
@@ -32,8 +42,7 @@ def pagination_handler(request, search_email_form, page_items_select_form):
         cur_page = 1
     """
 
-    # TODO: maybe ensure that when the items per page change, the current page resets or at least immediately
-    #       changes to the maximum it can get
+    # TODO: reset page counter when the items per page change?
 
     cur_page = int(page_items_select_form.fields['cur_page'].initial)
     items_per_page = int(page_items_select_form.fields['page_items'].initial)
@@ -46,9 +55,9 @@ def pagination_handler(request, search_email_form, page_items_select_form):
 
     # NOTE: objects type will depend on the selected table
     if search_email_form.is_valid():
-        objects = Seizure.objects.filter(email__contains=search_email_form.cleaned_data['search_email'])
+        objects = model_class.objects.filter(email__contains=search_email_form.cleaned_data['search_email'])
     else:
-        objects = Seizure.objects.all()
+        objects = model_class.objects.all()
 
     paginator = Paginator(objects, items_per_page)
 
@@ -63,12 +72,12 @@ def pagination_handler(request, search_email_form, page_items_select_form):
     table_data["items_count"] = paginator.count
     table_data["items_data"] = paginator.page(cur_page).object_list
     table_data["max_page"] = paginator.page_range.stop - 1
-    table_data["columns"] = [f.name for f in Seizure._meta.get_fields() if not f.is_relation or f.one_to_one]
+    table_data["columns"] = [f.name for f in model_class._meta.get_fields() if not f.is_relation and not f.one_to_one]
 
     return table_data
 
 #####################################
-#   View Classes                    #
+# View Classes                      #
 #####################################
 
 class LoginView(View):
@@ -107,7 +116,7 @@ class DashboardView(View):
         
         search_email_form = SearchEmailForm()
         page_items_select_form = PageItemsSelectForm()
-        table_data = pagination_handler(request, search_email_form, page_items_select_form)
+        table_data = pagination_handler(request, Seizure, search_email_form, page_items_select_form)
         
         return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_email_form": search_email_form})
 
@@ -118,7 +127,7 @@ class DashboardView(View):
 
         search_email_form = SearchEmailForm(request.POST)
         page_items_select_form = PageItemsSelectForm(request.POST)
-        table_data = pagination_handler(request, search_email_form, page_items_select_form)
+        table_data = pagination_handler(request, Seizure, search_email_form, page_items_select_form)
 
         # ajax request, return only the table html
         if (request.POST.get("ajaxTableUpdate") == "True"):
@@ -142,7 +151,7 @@ class InfrastructureView(View):
         return HttpResponse('Still nothing')
 
 #####################################
-#   View Functions                  #
+# View Functions                    #
 #####################################
 
 def index_view(request):
