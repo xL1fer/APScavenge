@@ -33,7 +33,17 @@ def authentication_handler(request, auth_required=True):
 
     return True
 
-def table_pagination_handler(request, model_class, search_table_form, page_items_select_form):
+def get_model_class(request, model_string):
+    if request.POST.get(model_string) == 'seizure':
+        return Seizure
+    elif request.POST.get(model_string) == 'infohistory':
+        return InfoHistory
+    elif request.POST.get(model_string) == 'passwordhash':
+        return PasswordHash
+
+    return Seizure  # NOTE: giving Seizure model class by default
+
+def table_data_handler(request, model_class, search_table_form, page_items_select_form):
     """
     cur_page = request.GET.get('page', 1)
     try:
@@ -44,47 +54,61 @@ def table_pagination_handler(request, model_class, search_table_form, page_items
 
     # TODO: reset cur_page when items_per_page change?
 
-    cur_page = int(page_items_select_form.fields['cur_page'].initial)
-    items_per_page = int(page_items_select_form.fields['page_items'].initial)
-
-    if page_items_select_form.is_valid():
-        cur_page = int(page_items_select_form.cleaned_data['cur_page'])
-        items_per_page = int(page_items_select_form.cleaned_data['page_items'])
-
-    objects = None
-
     table_data = {}
     table_data["fields"] = [f.name for f in model_class._meta.get_fields() if not f.is_relation and not f.one_to_one]
-    
-    # NOTE: Since the search_table_form.filter_field select has no default values, as they are only set directly in the dashboard_table.html template,
-    #       we need to set them here, otherwise the form is considered invalid for cona values that do not correspond to any default
-    filter_field = request.POST.get('filter_field')
-    if filter_field in table_data["fields"]:    # Ensure that the filter_field is not forged
-        search_table_form.fields['filter_field'].choices = [(filter_field, filter_field)]
-    
-    if search_table_form.is_valid():
-        filter_field = search_table_form.cleaned_data['filter_field']
-        search_field = search_table_form.cleaned_data['search_field']
-        if filter_field in table_data["fields"]:
-            filter_params = {f"{filter_field}__contains": search_field}
+    table_data["relation_fields"] = [f.name for f in model_class._meta.get_fields() if f.is_relation]
+    table_data["current_model"] = model_class.__name__.lower()
+
+    if not request.POST.get("ajaxSubTableUpdate"):
+        objects = None
+
+        cur_page = int(page_items_select_form.fields['cur_page'].initial)
+        items_per_page = int(page_items_select_form.fields['page_items'].initial)
+
+        if page_items_select_form.is_valid():
+            cur_page = int(page_items_select_form.cleaned_data['cur_page'])
+            items_per_page = int(page_items_select_form.cleaned_data['page_items'])
+
+        # NOTE: Since the search_table_form.filter_field select has no default values, as they are only set directly in the dashboard_table.html template,
+        #       we need to set them here, otherwise the form is considered invalid for cona values that do not correspond to any default
+        filter_field = request.POST.get('filter_field')
+        if filter_field in table_data["fields"]:    # Ensure that the filter_field is not forged
+            search_table_form.fields['filter_field'].choices = [(filter_field, filter_field)]
+        
+        if search_table_form.is_valid():
+            filter_params = {f"{search_table_form.cleaned_data['filter_field']}__contains": search_table_form.cleaned_data['search_field']}
             objects = model_class.objects.filter(**filter_params)
         else:
             objects = model_class.objects.all()
+
+        paginator = Paginator(objects, items_per_page)
+
+        if cur_page < paginator.page_range.start:
+            cur_page = paginator.page_range.start
+        elif cur_page >= paginator.page_range.stop:
+            cur_page = paginator.page_range.stop - 1
+
+        table_data["items_start"] = (cur_page - 1) * items_per_page + 1
+        table_data["items_stop"] = cur_page * items_per_page if cur_page * items_per_page < paginator.count else paginator.count
+        table_data["items_count"] = paginator.count
+        table_data["items_data"] = paginator.page(cur_page).object_list
+        table_data["max_page"] = paginator.page_range.stop - 1
+
     else:
-        objects = model_class.objects.all()
+        prev_model_class = get_model_class(request, 'previousModel')
 
-    paginator = Paginator(objects, items_per_page)
+        #print(f">>> {prev_model_class} -> {prev_model_class._meta.pk.name}")
+        #print(f">>> {model_class} -> {model_class._meta.pk.name}")
 
-    if (cur_page < paginator.page_range.start):
-        cur_page = paginator.page_range.start
-    elif (cur_page >= paginator.page_range.stop):
-        cur_page = paginator.page_range.stop - 1
+        #foreign_keys = [field.name for field in model_class._meta.fields if field.is_relation and field.many_to_one]
+        #print(f"{table_data["relation_fields"][-1]}__{prev_model_class._meta.pk.name}: {request.POST.get('requestValue')}")
 
-    table_data["items_start"] = (cur_page - 1) * items_per_page + 1
-    table_data["items_stop"] = cur_page * items_per_page if cur_page * items_per_page < paginator.count else paginator.count
-    table_data["items_count"] = paginator.count
-    table_data["items_data"] = paginator.page(cur_page).object_list
-    table_data["max_page"] = paginator.page_range.stop - 1
+        filter_params = {f"{table_data["relation_fields"][-1]}__{prev_model_class._meta.pk.name}": request.POST.get('requestValue')}
+        objects = model_class.objects.filter(**filter_params)
+        #objects = model_class.objects.filter(seizure_email__email=request.POST.get('requestValue'))
+        #objects = model_class.objects.filter(info_history__id=request.POST.get('requestValue'))
+
+        table_data["items_data"] = objects
 
     return table_data
 
@@ -126,9 +150,11 @@ class DashboardView(View):
         if not authentication_handler(request):
             return redirect('login')
         
+        model_class = get_model_class(request, 'requestModel')
+        
         search_table_form = SearchTableForm()
         page_items_select_form = PageItemsSelectForm()
-        table_data = table_pagination_handler(request, Seizure, search_table_form, page_items_select_form)
+        table_data = table_data_handler(request, model_class, search_table_form, page_items_select_form)
         
         return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
 
@@ -136,13 +162,18 @@ class DashboardView(View):
         assert isinstance(request, HttpRequest)
         if not authentication_handler(request):
             return redirect('login')
+        
+        model_class = get_model_class(request, 'requestModel')
 
         search_table_form = SearchTableForm(request.POST)
         page_items_select_form = PageItemsSelectForm(request.POST)
-        table_data = table_pagination_handler(request, Seizure, search_table_form, page_items_select_form)
-
-        # ajax request, return only the table html
-        if (request.POST.get("ajaxTableUpdate") == "True"):
+        table_data = table_data_handler(request, model_class, search_table_form, page_items_select_form)
+        
+        # ajax request, return only a sub portion of the dashboard content
+        if request.POST.get("ajaxTableUpdate"):
+            if request.POST.get('ajaxSubTableUpdate'):
+                return render(request, 'dashboard_subtable.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
+            
             return render(request, 'dashboard_table.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
         
         return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
@@ -180,6 +211,10 @@ def logout_view(request):
 
     logout(request)
     return redirect('index')
+
+
+
+########################
 
 def insert_dummy_data(request):
     """Fill database with dummy data"""

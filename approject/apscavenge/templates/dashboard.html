@@ -59,6 +59,47 @@
         $(document).on('change', '#dashboard-table-form select', function () {
             submitTableForm();
         });
+
+        $(document).on('click', '.clickable-row', function (e) {
+            let toggleId = $(this).attr('data-toggle-id');
+            if (toggleId.includes('passwordhash'))
+                return;
+            
+            let detailsRow = document.getElementById(toggleId + '_details');
+            if (detailsRow) {
+                if (detailsRow.style.display === 'none') {
+                    detailsRow.style.display = '';
+                    $(this).css('background-color', 'rgba(239, 154, 56, 0.3)');
+
+                    let csrf_token = $('[name="csrfmiddlewaretoken"]').val();   // Include CSRF token in AJAX request headers
+                    let formData = $('#dashboard-table-form').serialize();  // Serialize form data
+                    formData += '&ajaxTableUpdate=' + encodeURIComponent('True');
+                    formData += '&ajaxSubTableUpdate=' + encodeURIComponent('True');
+
+                    let relation_field = $(this).attr('relation-data-model');
+                    let current_model = toggleId.split('_')[0];
+                    formData += '&previousModel=' + encodeURIComponent(current_model);
+                    formData += '&requestModel=' + encodeURIComponent(relation_field);
+                    formData += '&requestValue=' + encodeURIComponent($(this).find('td').eq(0).text());
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '{% url "dashboard" %}',
+                        data: formData,
+                        headers: {
+                            'X-CSRFToken': csrf_token
+                        },
+                        success: function (response) {
+                            $('#' + toggleId + '_details' + ' span').html(response);
+                        }
+                    });
+                } else {
+                    detailsRow.style.display = 'none';
+                    $(this).css('background-color', '');
+                    $('#' + toggleId + '_details' + ' span').html('');
+                }
+            }
+        });
     </script>
 
     <!--

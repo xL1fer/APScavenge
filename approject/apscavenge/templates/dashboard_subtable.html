@@ -1,0 +1,27 @@
+<div class="table-responsive">
+    <table class="table table-custom">
+        <thead>
+            <tr>
+                <th scope="col">#</th>
+                {% for column in table_data.fields %}
+                <th scope="col">{{ column }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in table_data.items_data %}
+            <tr class="clickable-row" data-toggle-id="{{ table_data.current_model }}_row_{{ forloop.counter0 }}" relation-data-model="{{ table_data.relation_fields.0 }}">
+                <th scope="row">{{ forloop.counter }}</th>
+                {% for column in table_data.fields %}
+                <td>{{ data|get_value:column }}</td>
+                {% endfor %}
+            </tr>
+            <tr id="{{ table_data.current_model }}_row_{{ forloop.counter0 }}_details" style="display: none;">
+                <td style="padding: 0;" colspan="{{ table_data.fields|length|add:1 }}">
+                    <span></span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
