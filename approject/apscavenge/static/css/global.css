@@ -108,6 +108,22 @@ main {
     font-size: 15px;
 }
 
+.page-indicator form select {
+    border: 0;
+    color: #ef9a38;
+    cursor: pointer;
+    text-align: center;
+}
+
+.page-indicator form select:hover {
+    text-decoration: underline;
+}
+
+.page-indicator form option {
+    background-color: white;
+    color: grey;
+}
+
 .underlined {
     display: inline;
     position: relative;

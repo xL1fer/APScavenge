@@ -20,7 +20,15 @@
     </ul>
 </div>
 <div class="mt-5">
-    <p class="page-indicator">APScavenge <b>> <span class="underlined">Dashboard</b></span><span id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></p></span>
+    <div class="page-indicator">
+        APScavenge <b>> 
+        <span class="underlined">Dashboard</b></span>
+        <form method="post" enctype="multipart/form-data" style="display: inline-block;">
+                {% csrf_token %}
+            <span> > {{ select_table_form.table_select }}</span>
+        </form>
+        <span id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></span>
+    </div>
 
     {% include "dashboard_table.html" %}
 
@@ -29,6 +37,9 @@
             let csrf_token = $('[name="csrfmiddlewaretoken"]').val();   // Include CSRF token in AJAX request headers
             let formData = $('#dashboard-table-form').serialize();  // Serialize form data
             formData += '&ajaxTableUpdate=' + encodeURIComponent('True');
+
+            let requestModel = '{{ table_data.current_model }}';
+            formData += '&requestModel=' + encodeURIComponent(requestModel);
 
             $.ajax({
                 type: 'POST',
@@ -76,10 +87,10 @@
                     formData += '&ajaxTableUpdate=' + encodeURIComponent('True');
                     formData += '&ajaxSubTableUpdate=' + encodeURIComponent('True');
 
-                    let relation_field = $(this).attr('relation-data-model');
-                    let current_model = toggleId.split('_')[0];
-                    formData += '&previousModel=' + encodeURIComponent(current_model);
-                    formData += '&requestModel=' + encodeURIComponent(relation_field);
+                    let relationField = $(this).attr('relation-data-model');
+                    let previousModel = toggleId.split('_')[0];
+                    formData += '&previousModel=' + encodeURIComponent(previousModel);
+                    formData += '&requestModel=' + encodeURIComponent(relationField);
                     formData += '&requestValue=' + encodeURIComponent($(this).find('td').eq(0).text());
 
                     $.ajax({

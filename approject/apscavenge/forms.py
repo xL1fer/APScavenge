@@ -21,6 +21,16 @@ class PageItemsSelectForm(forms.Form):
     # submit form on select item change
     #page_items.widget.attrs.update(onChange="form.submit();")
 
+page_items_list = [
+    ('Seizure', 'Seizure'),
+    ('InfoHistory', 'InfoHistory'),
+    ('PasswordHash', 'PasswordHash'),
+    ]
+
+class SelectTableForm(forms.Form):
+    table_select = forms.ChoiceField(choices=page_items_list, initial='Seizure')
+
+    table_select.widget.attrs.update(onChange="form.submit();")
 
 class SearchTableForm(forms.Form):
     filter_field = forms.ChoiceField()

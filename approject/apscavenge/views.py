@@ -5,7 +5,7 @@ from django.core.paginator import Paginator # database objects paginator
 from django.contrib.auth import authenticate, login, logout # import Django built in functions
 
 from .models import Seizure, InfoHistory, PasswordHash#, User
-from .forms import LoginForm, PageItemsSelectForm, SearchTableForm
+from .forms import LoginForm, PageItemsSelectForm, SelectTableForm, SearchTableForm
 
 # Create your views here.
 
@@ -33,7 +33,14 @@ def authentication_handler(request, auth_required=True):
 
     return True
 
-def get_model_class(request, model_string):
+def get_model_class(request, select_table_form, model_string):
+
+    default_model_class = select_table_form.fields['table_select'].initial
+    if select_table_form.is_valid():
+        default_model_class = select_table_form.cleaned_data['table_select']
+
+    default_model_class = globals().get(default_model_class, None)
+
     if request.POST.get(model_string) == 'seizure':
         return Seizure
     elif request.POST.get(model_string) == 'infohistory':
@@ -41,9 +48,9 @@ def get_model_class(request, model_string):
     elif request.POST.get(model_string) == 'passwordhash':
         return PasswordHash
 
-    return Seizure  # NOTE: giving Seizure model class by default
+    return default_model_class  # NOTE: giving Seizure model class by default
 
-def table_data_handler(request, model_class, search_table_form, page_items_select_form):
+def table_data_handler(request, model_class, select_table_form, search_table_form, page_items_select_form):
     """
     cur_page = request.GET.get('page', 1)
     try:
@@ -95,7 +102,7 @@ def table_data_handler(request, model_class, search_table_form, page_items_selec
         table_data["max_page"] = paginator.page_range.stop - 1
 
     else:
-        prev_model_class = get_model_class(request, 'previousModel')
+        prev_model_class = get_model_class(request, select_table_form, 'previousModel')
 
         #print(f">>> {prev_model_class} -> {prev_model_class._meta.pk.name}")
         #print(f">>> {model_class} -> {model_class._meta.pk.name}")
@@ -150,33 +157,39 @@ class DashboardView(View):
         if not authentication_handler(request):
             return redirect('login')
         
-        model_class = get_model_class(request, 'requestModel')
-        
+        select_table_form = SelectTableForm()
         search_table_form = SearchTableForm()
         page_items_select_form = PageItemsSelectForm()
-        table_data = table_data_handler(request, model_class, search_table_form, page_items_select_form)
+
+        model_class = get_model_class(request, select_table_form, 'requestModel')
+        table_data = table_data_handler(request, model_class, select_table_form, search_table_form, page_items_select_form)
         
-        return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
+        return render(request, 'dashboard.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
 
     def post(self, request):
         assert isinstance(request, HttpRequest)
         if not authentication_handler(request):
             return redirect('login')
         
-        model_class = get_model_class(request, 'requestModel')
-
+        select_table_form = SelectTableForm(request.POST)
         search_table_form = SearchTableForm(request.POST)
+        if not search_table_form.is_valid():
+            search_table_form = SearchTableForm()
         page_items_select_form = PageItemsSelectForm(request.POST)
-        table_data = table_data_handler(request, model_class, search_table_form, page_items_select_form)
-        
+        if not page_items_select_form.is_valid():
+            page_items_select_form = PageItemsSelectForm()
+
+        model_class = get_model_class(request, select_table_form, 'requestModel')
+        table_data = table_data_handler(request, model_class, select_table_form, search_table_form, page_items_select_form)
+
         # ajax request, return only a sub portion of the dashboard content
         if request.POST.get("ajaxTableUpdate"):
             if request.POST.get('ajaxSubTableUpdate'):
-                return render(request, 'dashboard_subtable.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
+                return render(request, 'dashboard_subtable.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
             
-            return render(request, 'dashboard_table.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
+            return render(request, 'dashboard_table.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
         
-        return render(request, 'dashboard.html', {"table_data": table_data, "page_items_select_form": page_items_select_form, "search_table_form": search_table_form})
+        return render(request, 'dashboard.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
     
 class InfrastructureView(View):
     """Dashboard page render handler"""
