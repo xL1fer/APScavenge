@@ -6,10 +6,19 @@ from django.contrib.auth import authenticate, login, logout # import Django buil
 
 from .models import Seizure, InfoHistory, PasswordHash#, User
 from .forms import LoginForm, PageItemsSelectForm, SelectTableForm, SearchTableForm
+from .serializers import AgentHeartbeatSerializer, SeizureSerializer, InfoHistorySerializer, PasswordHashSerializer
 
-# Create your views here.
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework import permissions
+
+from rest_framework.authtoken.views import ObtainAuthToken
+from rest_framework.authtoken.models import Token
 
 from django.template.defaulttags import register
+
+# Create your views here.
 
 #####################################
 # Custom Django Template Filters    #
@@ -255,3 +264,92 @@ def delete_dummy_data(request):
     Seizure.objects.all().delete()
 
     return HttpResponse('<h3>Dummy data deleted.<h3>')
+
+#####################################
+# API Endpoints                     #
+#####################################
+
+class CustomAuthToken(ObtainAuthToken):
+    """API custom token authentication"""
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.pk,
+            'email': user.email
+        }, status=status.HTTP_200_OK)
+    
+class AgentHeartbeatAPI(APIView):
+    """Agent heartbeat handler"""
+
+    # add permission to check if user is authenticated
+    #permission_classes = [permissions.IsAuthenticated]
+
+    #def get(self, request, *args, **kwargs):
+    #    print('Received agent heartbeat!')
+    #    return Response({'heartbeat': 'received'}, status=status.HTTP_200_OK)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = AgentHeartbeatSerializer(data=request.data)
+        if serializer.is_valid():
+            #area_data = serializer.validated_data['area']
+            #print(f'Received {area_data} area agent heartbeat!')
+            return Response({'heartbeat': 'success'}, status=status.HTTP_200_OK)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SeizureAPI(APIView):
+    """Seizure API handler"""
+
+    # add permission to check if user is authenticated
+    #permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        seizure = Seizure.objects.all()
+        serializer = SeizureSerializer(seizure, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = SeizureSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class InfoHistoryAPI(APIView):
+    """InfoHistory API handler"""
+
+    def get(self, request, *args, **kwargs):
+        info_history = InfoHistory.objects.all()
+        serializer = InfoHistorySerializer(info_history, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = InfoHistorySerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordHashAPI(APIView):
+    """PasswordHash API handler"""
+
+    def get(self, request, *args, **kwargs):
+        password_hash = PasswordHash.objects.all()
+        serializer = InfoHistorySerializer(password_hash, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, *args, **kwargs):
+        serializer = PasswordHashSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

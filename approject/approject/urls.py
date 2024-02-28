@@ -27,7 +27,10 @@ from apscavenge import views
 #####################################
 
 urlpatterns = [
+    # django admin site url
     path('admin/', admin.site.urls),
+
+    # custom views urls
     path('', views.index_view, name="index"),
     path('login', views.LoginView.as_view(), name="login"),
     path('logout', views.logout_view, name="logout"),
@@ -36,4 +39,11 @@ urlpatterns = [
 
     path('insertdummydata', views.insert_dummy_data, name="insertdummydata"),
     path('deletedummydata', views.delete_dummy_data, name="deletedummydata"),
+
+    # api urls
+    path('token-auth-api', views.CustomAuthToken.as_view(), name="custom-auth-token"),
+    path('agent-heartbeat-api', views.AgentHeartbeatAPI.as_view(), name="agent-heartbeat-api"),
+    path('seizure-api', views.SeizureAPI.as_view(), name="seizure-api"),
+    path('infohistory-api', views.InfoHistoryAPI.as_view(), name="infohistory-api"),
+    path('passwordhash-api', views.PasswordHashAPI.as_view(), name="passwordhash-api"),
 ]

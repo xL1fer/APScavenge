@@ -111,6 +111,7 @@ main {
 .page-indicator form select {
     border: 0;
     color: #ef9a38;
+    background-color: white;
     cursor: pointer;
     text-align: center;
 }
