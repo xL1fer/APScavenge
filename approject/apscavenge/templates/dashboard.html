@@ -27,7 +27,7 @@
                 {% csrf_token %}
             <span> > {{ select_table_form.table_select }}</span>
         </form>
-        <span id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></span>
+        <span class="sidebar-hidden" id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></span>
     </div>
 
     {% include "dashboard_table.html" %}

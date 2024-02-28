@@ -173,11 +173,7 @@ class DashboardView(View):
         
         select_table_form = SelectTableForm(request.POST)
         search_table_form = SearchTableForm(request.POST)
-        if not search_table_form.is_valid():
-            search_table_form = SearchTableForm()
-        page_items_select_form = PageItemsSelectForm(request.POST)
-        if not page_items_select_form.is_valid():
-            page_items_select_form = PageItemsSelectForm()
+        page_items_select_form = PageItemsSelectForm(request.POST) if PageItemsSelectForm(request.POST).is_valid() else PageItemsSelectForm()
 
         model_class = get_model_class(request, select_table_form, 'requestModel')
         table_data = table_data_handler(request, model_class, select_table_form, search_table_form, page_items_select_form)
