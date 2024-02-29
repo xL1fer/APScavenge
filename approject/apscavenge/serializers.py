@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Seizure, InfoHistory, PasswordHash
+from .models import Seizure, InfoHistory, PasswordHash, AgentStatus
 
 class AgentHeartbeatSerializer(serializers.Serializer):
     area = serializers.CharField(max_length=64)
@@ -22,4 +22,9 @@ class InfoHistorySerializer(serializers.ModelSerializer):
 class PasswordHashSerializer(serializers.ModelSerializer):
     class Meta:
         model = PasswordHash
-        fields = ['id','asleap', 'jtr', 'hashcat', 'info_history_id']
+        fields = ['id', 'asleap', 'jtr', 'hashcat', 'info_history_id']
+
+class AgentStatusSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AgentStatus
+        fields = ['id', 'ip', 'area', 'is_online', 'is_attacking', 'heartbeat_fails']

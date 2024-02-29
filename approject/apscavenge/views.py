@@ -4,9 +4,9 @@ from django.http import HttpRequest, HttpResponse
 from django.core.paginator import Paginator # database objects paginator
 from django.contrib.auth import authenticate, login, logout # import Django built in functions
 
-from .models import Seizure, InfoHistory, PasswordHash#, User
+from .models import Seizure, InfoHistory, PasswordHash, AgentStatus#, User
 from .forms import LoginForm, PageItemsSelectForm, SelectTableForm, SearchTableForm
-from .serializers import AgentHeartbeatSerializer, SeizureSerializer, InfoHistorySerializer, PasswordHashSerializer
+from .serializers import AgentHeartbeatSerializer, SeizureSerializer, InfoHistorySerializer, PasswordHashSerializer, AgentStatusSerializer
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -230,8 +230,6 @@ def logout_view(request):
     logout(request)
     return redirect('index')
 
-
-
 ########################
 
 def insert_dummy_data(request):
@@ -294,13 +292,28 @@ class AgentHeartbeatAPI(APIView):
     #    print('Received agent heartbeat!')
     #    return Response({'heartbeat': 'received'}, status=status.HTTP_200_OK)
     
+    #def post(self, request, *args, **kwargs):
+    #    serializer = AgentHeartbeatSerializer(data=request.data)
+    #    if serializer.is_valid():
+    #        #area_data = serializer.validated_data['area']
+    #        #print(f'Received {area_data} area agent heartbeat!')
+    #        return Response({'heartbeat': 'success'}, status=status.HTTP_200_OK)
+    #    
+    #    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     def post(self, request, *args, **kwargs):
-        serializer = AgentHeartbeatSerializer(data=request.data)
+        # Verify if request is from an already existing area agent
+        if 'area' in request.data and AgentStatus.objects.filter(area=request.data['area']).exists():
+            if 'id' in request.data and AgentStatus.objects.filter(id=request.data['id']).exists(): 
+                return Response({"heartbeat": "success"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"id": "wrong area id."}, status=status.HTTP_200_OK)
+
+        serializer = AgentStatusSerializer(data=request.data)
         if serializer.is_valid():
-            #area_data = serializer.validated_data['area']
-            #print(f'Received {area_data} area agent heartbeat!')
-            return Response({'heartbeat': 'success'}, status=status.HTTP_200_OK)
-        
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SeizureAPI(APIView):
