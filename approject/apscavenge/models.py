@@ -44,7 +44,8 @@ class AgentStatus(models.Model):
     area = models.CharField(max_length=64, unique=True, null=False, blank=False)
     is_online = models.BooleanField(default=True)
     is_attacking = models.BooleanField(default=False)
-    heartbeat_fails = models.SmallIntegerField(default=0)
+    #heartbeat_fails = models.SmallIntegerField(default=0)
+    last_heartbeat = models.DateTimeField(auto_now_add=True)
 
 #class User(AbstractUser):
 #    pass

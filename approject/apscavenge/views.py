@@ -18,6 +18,8 @@ from rest_framework.authtoken.models import Token
 
 from django.template.defaulttags import register
 
+from django.utils import timezone
+
 # Create your views here.
 
 #####################################
@@ -304,8 +306,12 @@ class AgentHeartbeatAPI(APIView):
     def post(self, request, *args, **kwargs):
         # Verify if request is from an already existing area agent
         if 'area' in request.data and AgentStatus.objects.filter(area=request.data['area']).exists():
-            if 'id' in request.data and AgentStatus.objects.filter(id=request.data['id']).exists(): 
-                return Response({"heartbeat": "success"}, status=status.HTTP_200_OK)
+            if 'id' in request.data and AgentStatus.objects.filter(id=request.data['id']).exists():
+                agentstatus = AgentStatus.objects.get(id=request.data['id'])
+                agentstatus.last_heartbeat = timezone.now()
+                agentstatus.save()
+
+                return Response({"last_heartbeat": agentstatus.last_heartbeat}, status=status.HTTP_200_OK)
             else:
                 return Response({"id": "wrong area id."}, status=status.HTTP_200_OK)
 
