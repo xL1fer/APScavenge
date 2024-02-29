@@ -313,7 +313,7 @@ class AgentHeartbeatAPI(APIView):
 
                 return Response({"last_heartbeat": agentstatus.last_heartbeat}, status=status.HTTP_200_OK)
             else:
-                return Response({"id": "wrong area id."}, status=status.HTTP_200_OK)
+                return Response({"id": "wrong area id."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = AgentStatusSerializer(data=request.data)
         if serializer.is_valid():
