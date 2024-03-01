@@ -358,7 +358,7 @@ class CentralHeartbeatAPI(APIView):
 
                 return Response({"last_heartbeat": agentstatus.last_heartbeat}, status=status.HTTP_200_OK)
             else:
-                return Response({"id": "Wrong area id."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": "Wrong area id."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = AgentStatusSerializer(data=request.data)
         if serializer.is_valid():
@@ -379,6 +379,10 @@ class SeizureAPI(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
+        if 'email' in request.data and AgentStatus.objects.filter(area=request.data['email']).exists():
+            #seizure = Seizure.objects.get(email=request.data['email'])
+            return Response({'message': 'Email already registered.'}, status=status.HTTP_200_OK)
+
         serializer = SeizureSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -395,12 +399,18 @@ class InfoHistoryAPI(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
-        serializer = InfoHistorySerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        infohistory_serializer = InfoHistorySerializer(data=request.data)
+
+        if not infohistory_serializer.is_valid():
+            return Response(infohistory_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        infohistory_serializer.save()
+
+        if 'asleap' in request.data and 'jtr' in request.data and 'hashcat' in request.data:
+            passwordhash = PasswordHash(asleap=request.data['asleap'], jtr=request.data['jtr'], hashcat=request.data['hashcat'], info_history_id=infohistory_serializer.data['id'])
+            passwordhash.save()
+        
+        return Response(infohistory_serializer.data, status=status.HTTP_201_CREATED)
 
 class PasswordHashAPI(APIView):
     """PasswordHash API handler"""

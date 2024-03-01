@@ -4,7 +4,7 @@
         <div class="row">
             {% for agentstatus in agentstatus_objects %}
             <div class="col">
-                <div class="title">[ {{ agentstatus.area|upper }} ] AREA AGENT</div>
+                <div class="title">[{{ agentstatus.area|upper }}] AREA AGENT</div>
                 <div>{% if agentstatus.is_online %}<b style="color: rgb(80, 202, 80)">Online</b>{% else %}<b style="color: rgb(226, 96, 96)">Offline</b>{% endif %}</div>
                 <div><b>ID: </b>{{ agentstatus.id }}</div>
                 <div><b>IP: </b>{{ agentstatus.ip }}</div>
