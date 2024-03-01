@@ -1,17 +1,21 @@
 <form method="post" enctype="multipart/form-data" id="dashboard-table-form">
     {% csrf_token %}
 
-    <span class="input-custom" style="white-space: nowrap;">
-        <select name="{{ search_table_form.filter_field.name }}">
-            {% for field in table_data.fields %}
-                <option value="{{ field }}" {% if field == search_table_form.filter_field.value %}selected{% endif %}>{{ field }}</option>
-            {% endfor %}
-        </select>
-        <svg style="position:relative; left: -40px; pointer-events: none;" width="20" fill="black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="chevron-down" class="svg-inline--fa fa-chevron-down " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M239 401c9.4 9.4 24.6 9.4 33.9 0L465 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-175 175L81 175c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9L239 401z"></path></svg>
+    <span class="input-custom">
+        <span style="white-space: nowrap;">
+            <select name="{{ search_table_form.filter_field.name }}">
+                {% for field in table_data.fields %}
+                    <option value="{{ field }}" {% if field == search_table_form.filter_field.value %}selected{% endif %}>{{ field }}</option>
+                {% endfor %}
+            </select>
+            <svg style="position:relative; left: -40px; pointer-events: none;" width="20" fill="black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="chevron-down" class="svg-inline--fa fa-chevron-down " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M239 401c9.4 9.4 24.6 9.4 33.9 0L465 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-175 175L81 175c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9L239 401z"></path></svg>
+        </span>
 
-        {{ search_table_form.search_field }}
-        <svg style="position:relative; left: -40px; pointer-events: none;" width="20" fill="black" aria-hidden="true" focusable="false" data-prefix="fal" data-icon="magnifying-glass" class="svg-inline--fa fa-magnifying-glass " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M384 208A176 176 0 1 0 32 208a176 176 0 1 0 352 0zM343.3 366C307 397.2 259.7 416 208 416C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208c0 51.7-18.8 99-50 135.3L507.3 484.7c6.2 6.2 6.2 16.4 0 22.6s-16.4 6.2-22.6 0L343.3 366z"></path></svg>
-        <input type="submit" style="display: none;">
+        <span style="white-space: nowrap;">
+            {{ search_table_form.search_field }}
+            <svg style="position:relative; left: -40px; pointer-events: none;" width="20" fill="black" aria-hidden="true" focusable="false" data-prefix="fal" data-icon="magnifying-glass" class="svg-inline--fa fa-magnifying-glass " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M384 208A176 176 0 1 0 32 208a176 176 0 1 0 352 0zM343.3 366C307 397.2 259.7 416 208 416C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208c0 51.7-18.8 99-50 135.3L507.3 484.7c6.2 6.2 6.2 16.4 0 22.6s-16.4 6.2-22.6 0L343.3 366z"></path></svg>
+            <input type="submit" style="display: none;">
+        </span>
     </span>
 
     <div {% if table_data.items_stop == 0 %}style="visibility: hidden;"{% endif %} class="table-responsive">
@@ -58,14 +62,10 @@
             </thead>
         </table>
     </div>
-
     {% if table_data.items_stop == 0 %}
-
     <div class="center">
         <svg class="mb-4" fill="#ef9a38" width="70" aria-hidden="true" focusable="false" data-prefix="fal" data-icon="info-circle" class="svg-inline--fa fa-info-circle fa-w-16 " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 40c118.621 0 216 96.075 216 216 0 119.291-96.61 216-216 216-119.244 0-216-96.562-216-216 0-119.203 96.602-216 216-216m0-32C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm-36 344h12V232h-12c-6.627 0-12-5.373-12-12v-8c0-6.627 5.373-12 12-12h48c6.627 0 12 5.373 12 12v140h12c6.627 0 12 5.373 12 12v8c0 6.627-5.373 12-12 12h-72c-6.627 0-12-5.373-12-12v-8c0-6.627 5.373-12 12-12zm36-240c-17.673 0-32 14.327-32 32s14.327 32 32 32 32-14.327 32-32-14.327-32-32-32z"></path></svg>
         <h5>No data found</h5>
-    </div>    
-
+    </div>
     {% endif %}
-
 </form>

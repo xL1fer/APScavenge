@@ -28,7 +28,7 @@ class InfoHistory(models.Model):
     user_type = models.CharField(max_length=64, blank=True)
     user_info = models.TextField(blank=True)
     capture_time = models.DateTimeField(auto_now_add=True) #(default=timezone.now, auto_now_add=False)
-    area = models.CharField(max_length=64, blank=True)
+    area = models.CharField(max_length=64, null=False, blank=False)
     seizure_email = models.ForeignKey(Seizure, on_delete=models.CASCADE)
 
 class PasswordHash(models.Model):

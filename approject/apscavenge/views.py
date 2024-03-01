@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout # import Django buil
 
 from .models import Seizure, InfoHistory, PasswordHash, AgentStatus#, User
 from .forms import LoginForm, PageItemsSelectForm, SelectTableForm, SearchTableForm
-from .serializers import AgentHeartbeatSerializer, SeizureSerializer, InfoHistorySerializer, PasswordHashSerializer, AgentStatusSerializer
+from .serializers import SeizureSerializer, InfoHistorySerializer, PasswordHashSerializer, AgentStatusSerializer
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,6 +21,10 @@ from django.template.defaulttags import register
 from django.utils import timezone
 
 # Create your views here.
+
+#from .tasks import init_tasks
+
+#init_tasks()
 
 #####################################
 # Custom Django Template Filters    #
@@ -130,6 +134,14 @@ def table_data_handler(request, model_class, select_table_form, search_table_for
 
     return table_data
 
+def update_active_agents():
+    agentstatus_objects = AgentStatus.objects.all()
+    for agentstatus in agentstatus_objects:
+        time_difference = timezone.now() - agentstatus.last_heartbeat
+
+        if time_difference.total_seconds() > 25:
+            agentstatus.delete()
+
 #####################################
 # View Classes                      #
 #####################################
@@ -190,7 +202,7 @@ class DashboardView(View):
         table_data = table_data_handler(request, model_class, select_table_form, search_table_form, page_items_select_form)
 
         # ajax request, return only a sub portion of the dashboard content
-        if request.POST.get("ajaxTableUpdate"):
+        if request.POST.get('ajaxTableUpdate'):
             if request.POST.get('ajaxSubTableUpdate'):
                 return render(request, 'dashboard_subtable.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
             
@@ -206,12 +218,30 @@ class InfrastructureView(View):
         if not authentication_handler(request):
             return redirect('login')
         
-        return render(request, 'infrastructure.html')
+        update_active_agents()
+        agentstatus_objects = AgentStatus.objects.all()
+        
+        return render(request, 'infrastructure.html', {"agentstatus_objects": agentstatus_objects})
 
     def post(self, request):
         assert isinstance(request, HttpRequest)
+        if not authentication_handler(request):
+            return redirect('login')
+        
+        update_active_agents()
+        agentstatus_objects = AgentStatus.objects.all()
 
-        return HttpResponse('Still nothing')
+        if request.POST.get('agentAction'):
+            agentAction = request.POST['agentAction'].split('-')
+            print(agentAction)
+            # TODO: Continue from here
+            #   ...
+            #   > change agent with the ID from agentAction to start/stop attack, etc
+
+        if request.POST.get('ajaxGridUpdate'):
+            return render(request, 'infrastructure_grid.html', {"agentstatus_objects": agentstatus_objects})
+
+        return render(request, 'infrastructure.html', {"agentstatus_objects": agentstatus_objects})
 
 #####################################
 # View Functions                    #
@@ -284,36 +314,25 @@ class CustomAuthToken(ObtainAuthToken):
             'email': user.email
         }, status=status.HTTP_200_OK)
     
-class AgentHeartbeatAPI(APIView):
-    """Agent heartbeat handler"""
+class CentralHeartbeatAPI(APIView):
+    """Central heartbeat handler"""
 
     # add permission to check if user is authenticated
     #permission_classes = [permissions.IsAuthenticated]
 
-    #def get(self, request, *args, **kwargs):
-    #    print('Received agent heartbeat!')
-    #    return Response({'heartbeat': 'received'}, status=status.HTTP_200_OK)
-    
-    #def post(self, request, *args, **kwargs):
-    #    serializer = AgentHeartbeatSerializer(data=request.data)
-    #    if serializer.is_valid():
-    #        #area_data = serializer.validated_data['area']
-    #        #print(f'Received {area_data} area agent heartbeat!')
-    #        return Response({'heartbeat': 'success'}, status=status.HTTP_200_OK)
-    #    
-    #    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
     def post(self, request, *args, **kwargs):
+        update_active_agents()
+
         # Verify if request is from an already existing area agent
         if 'area' in request.data and AgentStatus.objects.filter(area=request.data['area']).exists():
-            if 'id' in request.data and AgentStatus.objects.filter(id=request.data['id']).exists():
+            if 'id' in request.data and (type(request.data['id']) == int or type(request.data['id']) == str and request.data['id'].isdigit()) and AgentStatus.objects.filter(id=request.data['id']).exists():
                 agentstatus = AgentStatus.objects.get(id=request.data['id'])
                 agentstatus.last_heartbeat = timezone.now()
                 agentstatus.save()
 
                 return Response({"last_heartbeat": agentstatus.last_heartbeat}, status=status.HTTP_200_OK)
             else:
-                return Response({"id": "wrong area id."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"id": "Wrong area id."}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = AgentStatusSerializer(data=request.data)
         if serializer.is_valid():

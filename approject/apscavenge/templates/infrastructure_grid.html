@@ -1,0 +1,26 @@
+<form method="post" enctype="multipart/form-data" id="infrastructure-grid-form">
+    {% csrf_token %}
+    <div class="container custom-grid">
+        <div class="row">
+            {% for agentstatus in agentstatus_objects %}
+            <div class="col">
+                <div class="title">[ {{ agentstatus.area|upper }} ] AREA AGENT</div>
+                <div><b>ID: </b>{{ agentstatus.id }}</div>
+                <div><b>IP: </b>{{ agentstatus.ip }}</div>
+                <div><b>Online: </b>{{ agentstatus.is_online }}</div>
+                <div><b>Attacking: </b>{{ agentstatus.is_attacking }}</div>
+                <div><b>Last heartbeat: </b>{{ agentstatus.last_heartbeat }}</div>
+
+                <div class="mt-4">
+
+                {% if not agentstatus.is_attacking %}
+                <button id="{{ agentstatus.id }}-start" value="start-attack">Start attack</button><!--<button type="submit" form="infrastructure-grid-form" value="start-attack">Start attack</button>-->
+                {% else %}
+                <button id="{{ agentstatus.id }}-stop" value="stop-attack">Stop attack</button><!--<button type="submit" form="infrastructure-grid-form" value="stop-attack">Stop attack</button>-->
+                {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</form>

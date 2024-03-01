@@ -42,7 +42,7 @@ urlpatterns = [
 
     # api urls
     path('token-auth-api', views.CustomAuthToken.as_view(), name="custom-auth-token"),
-    path('agent-heartbeat-api', views.AgentHeartbeatAPI.as_view(), name="agent-heartbeat-api"),
+    path('central-heartbeat-api', views.CentralHeartbeatAPI.as_view(), name="central-heartbeat-api"),
     path('seizure-api', views.SeizureAPI.as_view(), name="seizure-api"),
     path('infohistory-api', views.InfoHistoryAPI.as_view(), name="infohistory-api"),
     path('passwordhash-api', views.PasswordHashAPI.as_view(), name="passwordhash-api"),

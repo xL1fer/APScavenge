@@ -1,0 +1,37 @@
+/*
+    Infrastructure styling
+*/
+
+/* Grid */
+
+.custom-grid .row > div {
+    min-height: 250px;
+    height: 100%;
+    width: 100%;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 2px 4px;
+    padding: 14px 20px 20px;
+    border: 0px;
+    margin: 10px;
+}
+
+.custom-grid .row > div .title {
+    color: #ef9a38;
+    font-weight: bold;
+    font-size: 1.125rem;
+    line-height: 2.5;
+}
+
+.custom-grid .row > div button {
+    all: unset;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    padding: 12px;
+}
+
+.custom-grid .row > div button:hover {
+    cursor: pointer;
+    color: white;
+    background-color: #ef9a38;
+    border: 1px solid #ef9a38;
+}

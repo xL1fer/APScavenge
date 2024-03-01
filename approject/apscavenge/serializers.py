@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Seizure, InfoHistory, PasswordHash, AgentStatus
 
-class AgentHeartbeatSerializer(serializers.Serializer):
+class CentralHeartbeatSerializer(serializers.Serializer):
     area = serializers.CharField(max_length=64)
 
     #def validate_area(self, value):

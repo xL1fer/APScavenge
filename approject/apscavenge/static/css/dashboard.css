@@ -67,7 +67,7 @@
     padding: 8px 10px;
     /*min-width: 300px;*/
     width: 23%;
-    min-width: 150px;
+    min-width: 200px;
 }
 
 .input-custom input:hover {
@@ -84,7 +84,7 @@
     padding: 8px 10px;
     /*min-width: 300px;*/
     width: 23%;
-    min-width: 150px;
+    min-width: 200px;
 }
 
 .input-custom select:hover {
@@ -150,12 +150,6 @@ table.table-custom td a.a-disabled {
 }
 
 /* Misc */
-
-.center {
-    margin: auto;
-    width: 50%;
-    text-align: center;
-}
 
 .prevent-select {
     -webkit-user-select: none; /* Safari */

@@ -24,7 +24,7 @@
         APScavenge <b>> 
         <span class="underlined">Dashboard</b></span>
         <form method="post" enctype="multipart/form-data" style="display: inline-block;">
-                {% csrf_token %}
+            {% csrf_token %}
             <span> > {{ select_table_form.table_select }}</span>
         </form>
         <span class="sidebar-hidden" id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></span>
