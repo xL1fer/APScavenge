@@ -20,6 +20,8 @@ from django.template.defaulttags import register
 
 from django.utils import timezone
 
+import requests
+
 # Create your views here.
 
 #from .tasks import init_tasks
@@ -142,6 +144,9 @@ def update_active_agents():
         if time_difference.total_seconds() > 25:
             agentstatus.delete()
 
+def is_int(arg):
+    return type(arg) == int or type(arg) == str and arg.isdigit()
+
 #####################################
 # View Classes                      #
 #####################################
@@ -233,10 +238,31 @@ class InfrastructureView(View):
 
         if request.POST.get('agentAction'):
             agentAction = request.POST['agentAction'].split('-')
-            print(agentAction)
-            # TODO: Continue from here
-            #   ...
-            #   > change agent with the ID from agentAction to start/stop attack, etc
+            if is_int(agentAction[0]) and AgentStatus.objects.filter(id=agentAction[0]).exists():
+                agentstatus = AgentStatus.objects.get(id=agentAction[0])
+                if agentAction[1] == 'start':
+                    try:
+                        url = f'http://{agentstatus.ip}/start-attack-api'
+                        response = requests.get(url)
+                        print(f'Response: status code {response.status_code} | content {response.content}')
+                        #content_dict = json.loads(response.content.decode("UTF-8"))
+
+                        agentstatus.is_attacking = True
+                        agentstatus.save()
+                    except requests.exceptions.RequestException as e:
+                        agentstatus.delete()
+
+                elif agentAction[1] == 'stop':
+                    try:
+                        url = f'http://{agentstatus.ip}/stop-attack-api'
+                        response = requests.get(url)
+                        print(f'Response: status code {response.status_code} | content {response.content}')
+                        #content_dict = json.loads(response.content.decode("UTF-8"))
+
+                        agentstatus.is_attacking = False
+                        agentstatus.save()
+                    except requests.exceptions.RequestException as e:
+                        agentstatus.delete()
 
         if request.POST.get('ajaxGridUpdate'):
             return render(request, 'infrastructure_grid.html', {"agentstatus_objects": agentstatus_objects})
@@ -325,7 +351,7 @@ class CentralHeartbeatAPI(APIView):
 
         # Verify if request is from an already existing area agent
         if 'area' in request.data and AgentStatus.objects.filter(area=request.data['area']).exists():
-            if 'id' in request.data and (type(request.data['id']) == int or type(request.data['id']) == str and request.data['id'].isdigit()) and AgentStatus.objects.filter(id=request.data['id']).exists():
+            if 'id' in request.data and is_int(request.data['id']) and AgentStatus.objects.filter(id=request.data['id']).exists():
                 agentstatus = AgentStatus.objects.get(id=request.data['id'])
                 agentstatus.last_heartbeat = timezone.now()
                 agentstatus.save()

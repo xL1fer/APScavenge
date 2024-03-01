@@ -27,4 +27,4 @@ class PasswordHashSerializer(serializers.ModelSerializer):
 class AgentStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgentStatus
-        fields = ['id', 'ip', 'area', 'is_online', 'is_attacking', 'last_heartbeat']
+        fields = ['id', 'ip', 'token', 'area', 'is_online', 'is_attacking', 'last_heartbeat']
