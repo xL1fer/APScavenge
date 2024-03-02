@@ -21,6 +21,7 @@ from django.template.defaulttags import register
 from django.utils import timezone
 
 import requests
+import json
 
 # Create your views here.
 
@@ -245,10 +246,18 @@ class InfrastructureView(View):
                         url = f'http://{agentstatus.ip}/start-attack-api'
                         response = requests.get(url)
                         print(f'Response: status code {response.status_code} | content {response.content}')
-                        #content_dict = json.loads(response.content.decode("UTF-8"))
 
-                        agentstatus.is_attacking = True
+                        if response.status_code == 200:
+                            agentstatus.is_attacking = True
                         agentstatus.save()
+
+                        for agent in agentstatus_objects:
+                            if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
+                                try:
+                                    agent.message = json.loads(response.content.decode("UTF-8"))['message']
+                                except ValueError as e:
+                                    pass
+
                     except requests.exceptions.RequestException as e:
                         agentstatus.delete()
 
@@ -257,10 +266,17 @@ class InfrastructureView(View):
                         url = f'http://{agentstatus.ip}/stop-attack-api'
                         response = requests.get(url)
                         print(f'Response: status code {response.status_code} | content {response.content}')
-                        #content_dict = json.loads(response.content.decode("UTF-8"))
 
                         agentstatus.is_attacking = False
                         agentstatus.save()
+
+                        for agent in agentstatus_objects:
+                            if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
+                                try:
+                                    agent.message = json.loads(response.content.decode("UTF-8"))['message']
+                                except ValueError as e:
+                                    pass
+
                     except requests.exceptions.RequestException as e:
                         agentstatus.delete()
 
@@ -354,6 +370,8 @@ class CentralHeartbeatAPI(APIView):
             if 'id' in request.data and is_int(request.data['id']) and AgentStatus.objects.filter(id=request.data['id']).exists():
                 agentstatus = AgentStatus.objects.get(id=request.data['id'])
                 agentstatus.last_heartbeat = timezone.now()
+                if 'is_attacking' in request.data:
+                    agentstatus.is_attacking = True if request.data['is_attacking'] == True else False
                 agentstatus.save()
 
                 return Response({"last_heartbeat": agentstatus.last_heartbeat}, status=status.HTTP_200_OK)

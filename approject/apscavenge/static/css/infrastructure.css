@@ -42,3 +42,7 @@
     background-color: rgb(230, 230, 230);
     border: 1px solid grey;
 }
+
+.custom-grid .row > div a {
+    color: #ef9a38;
+}

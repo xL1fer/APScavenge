@@ -4,21 +4,22 @@
         <div class="row">
             {% for agentstatus in agentstatus_objects %}
             <div class="col">
-                <div class="title">[{{ agentstatus.area|upper }}] AREA AGENT</div>
+                <div class="title">&lt;{{ agentstatus.area|upper }}&gt; AREA AGENT</div>
                 <div>{% if agentstatus.is_online %}<b style="color: rgb(80, 202, 80)">Online</b>{% else %}<b style="color: rgb(226, 96, 96)">Offline</b>{% endif %}</div>
                 <div><b>ID: </b>{{ agentstatus.id }}</div>
                 <div><b>IP: </b>{{ agentstatus.ip }}</div>
                 <div><b>Attacking: </b>{{ agentstatus.is_attacking }}</div>
                 <div><b>Last update: </b>{{ agentstatus.last_heartbeat }}</div>
 
-                <div class="mt-4">
-
-                {% if not agentstatus.is_attacking %}
-                <button id="{{ agentstatus.id }}-start" value="start-attack">Start attack</button><!--<button type="submit" form="infrastructure-grid-form" value="start-attack">Start attack</button>-->
-                {% else %}
-                <button id="{{ agentstatus.id }}-stop" value="stop-attack">Stop attack</button><!--<button type="submit" form="infrastructure-grid-form" value="stop-attack">Stop attack</button>-->
-                {% endif %}
+                <div class="mt-4 mb-4">
+                    {% if not agentstatus.is_attacking %}
+                    <button id="{{ agentstatus.id }}-start" value="start-attack">Start attack</button><!--<button type="submit" form="infrastructure-grid-form" value="start-attack">Start attack</button>-->
+                    {% else %}
+                    <button id="{{ agentstatus.id }}-stop" value="stop-attack">Stop attack</button><!--<button type="submit" form="infrastructure-grid-form" value="stop-attack">Stop attack</button>-->
+                    {% endif %}
                 </div>
+                <div><a href="">Details</a></div>
+                {% if agentstatus.message is not None %}<span style="color: #ef9a38;"><b>Agent message: </b>{{ agentstatus.message }}</span>{% endif %}
             </div>
             {% endfor %}
         </div>
