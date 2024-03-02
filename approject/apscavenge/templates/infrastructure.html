@@ -43,6 +43,8 @@
     //});
 
     $(document).on('click', '#infrastructure-grid-form button', function (e) {
+        $(this).prop('disabled', true);
+        $(this).addClass('action-disabled');
         e.preventDefault();
         submitGridForm($(this).attr('id'));
     });
