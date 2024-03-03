@@ -36,6 +36,7 @@ urlpatterns = [
     path('logout', views.logout_view, name="logout"),
     path('dashboard', views.DashboardView.as_view(), name="dashboard"),
     path('infrastructure', views.InfrastructureView.as_view(), name="infrastructure"),
+    path('infrastructure/<str:area>/', views.InfrastructureAgentView.as_view(), name="infrastructure-agent"),
 
     path('insertdummydata', views.insert_dummy_data, name="insertdummydata"),
     path('deletedummydata', views.delete_dummy_data, name="deletedummydata"),

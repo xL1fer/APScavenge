@@ -217,7 +217,7 @@ class DashboardView(View):
         return render(request, 'dashboard.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
     
 class InfrastructureView(View):
-    """Dashboard page render handler"""
+    """Infrastructure page render handler"""
 
     def get(self, request):
         assert isinstance(request, HttpRequest)
@@ -291,6 +291,31 @@ class InfrastructureView(View):
             return render(request, 'infrastructure_grid.html', {"agentstatus_objects": agentstatus_objects})
 
         return render(request, 'infrastructure.html', {"agentstatus_objects": agentstatus_objects})
+
+class InfrastructureAgentView(View):
+    """Infrastructure agent page render handler"""
+
+    def get(self, request, area):
+        assert isinstance(request, HttpRequest)
+        if not authentication_handler(request):
+            return redirect('login')
+        
+        if AgentStatus.objects.filter(area=area).exists():
+            agentstatus = AgentStatus.objects.get(area=area)
+            return render(request, 'infrastructure_agent.html', {'agentstatus': agentstatus})
+        
+        return redirect('infrastructure')
+
+    def post(self, request, area):
+        assert isinstance(request, HttpRequest)
+        if not authentication_handler(request):
+            return redirect('login')
+        
+        if AgentStatus.objects.filter(area=area).exists():
+            agentstatus = AgentStatus.objects.get(area=area)
+            return render(request, 'infrastructure_agent.html', {'agentstatus': agentstatus})
+        
+        return render(request, 'infrastructure_agent.html')
 
 #####################################
 # View Functions                    #

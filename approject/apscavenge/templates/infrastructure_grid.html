@@ -18,7 +18,7 @@
                     <button id="{{ agentstatus.id }}-stop" value="stop-attack">Stop attack</button><!--<button type="submit" form="infrastructure-grid-form" value="stop-attack">Stop attack</button>-->
                     {% endif %}
                 </div>
-                <div><a href="">Details</a></div>
+                <div><a href="{% url 'infrastructure-agent' area=agentstatus.area %}">Details</a></div>
                 {% if agentstatus.message is not None %}<span style="color: #ef9a38;"><b>Agent message: </b>{{ agentstatus.message }}</span>{% endif %}
             </div>
             {% endfor %}
