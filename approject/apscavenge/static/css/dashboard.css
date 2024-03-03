@@ -20,6 +20,10 @@
     padding: 0;
 }
 
+.no-hover {
+    pointer-events: none;
+}
+
 .sidebar ul a, #a-sidebar-toggle {
     text-decoration: none;
     /*color: white;*/

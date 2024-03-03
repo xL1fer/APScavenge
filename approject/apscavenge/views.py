@@ -226,6 +226,13 @@ class InfrastructureView(View):
         
         update_active_agents()
         agentstatus_objects = AgentStatus.objects.all()
+
+        # TODO: details page for a specific agent
+        """
+        agent_id = request.GET.get('agent', None)
+        if agent_id is not None and is_int(agent_id) and AgentStatus.objects.filter(id=agent_id):
+            return render(request, 'infrastructure_agent.html', {"agentstatus": AgentStatus.objects.get(id=agent_id)})
+        """
         
         return render(request, 'infrastructure.html', {"agentstatus_objects": agentstatus_objects})
 

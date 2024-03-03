@@ -3,6 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const buttonSidebarToggle = document.getElementById("button-sidebar-toggle");
     const aSidebarToggle = document.getElementById("a-sidebar-toggle");
     const sidebarToggleContainer = document.getElementById("sidebar-toggle-container");
+    const ulSidebar = document.getElementById("ul-sidebar");
 
     // Toggle sidebar visibility based on window width
     function toggleSidebarVisibility() {
@@ -12,11 +13,13 @@ document.addEventListener("DOMContentLoaded", function () {
             sidebar.classList.add("sidebar-hidden");
             aSidebarToggle.classList.remove("sidebar-hidden");
             sidebarToggleContainer.classList.remove("sidebar-hidden");
+            ulSidebar.classList.add("no-hover");
         }
         else {
             sidebar.classList.remove("sidebar-hidden");
             aSidebarToggle.classList.add("sidebar-hidden");
             sidebarToggleContainer.classList.add("sidebar-hidden");
+            ulSidebar.classList.remove("no-hover");
         }
     }
 
@@ -28,10 +31,12 @@ document.addEventListener("DOMContentLoaded", function () {
     {
         buttonSidebarToggle.addEventListener("click", function () {
             sidebar.classList.toggle("sidebar-hidden");
+            ulSidebar.classList.toggle("no-hover");
         });
 
         aSidebarToggle.addEventListener("click", function () {
             sidebar.classList.toggle("sidebar-hidden");
+            ulSidebar.classList.toggle("no-hover");
         });
     }
 

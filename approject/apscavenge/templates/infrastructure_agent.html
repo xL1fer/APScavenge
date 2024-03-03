@@ -1,0 +1,16 @@
+{% extends "layout-nav.html" %}
+{% load static %}
+
+{% block custom_stylesheet %}
+<link rel="stylesheet" href="{% static 'css/infrastructure.css' %}">
+{% endblock %}
+
+{% block title_ext %}Agent {{ agentstatus.id }} - {% endblock %}
+
+{% block main_class %} class="mt-5 mb-5"{% endblock %}
+
+{% block content %}
+
+<div class="page-indicator">APScavenge <b>> <span class="underlined mb-5">Agent {{ agentstatus.id }}</b></span></div>
+
+{% endblock %}
