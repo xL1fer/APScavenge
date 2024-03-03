@@ -46,3 +46,36 @@
 .custom-grid .row > div a {
     color: #ef9a38;
 }
+
+.details-grid .row:first-child .col:first-child {
+    min-height: 300px;
+    height: 100%;
+    width: 100%;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 8px 16px 0px;
+    padding: 0;
+    border: 0px;
+    margin: 10px;
+}
+
+.details-grid .row:first-child .col:nth-child(2) {
+    min-height: 250px;
+    min-width: 600px;
+    height: 100%;
+    padding: 14px 20px 20px;
+    margin: 65px 10px 10px 10px;
+}
+
+.details-grid .row:first-child .col:nth-child(3) {
+    font-size: 0.875rem;
+    height: 100%;
+    padding: 14px 0px;
+    border-top: 3px solid black;
+    border-bottom: 3px solid black;
+    margin: 125px 10px 10px 10px;
+}
+
+.details-grid .row:first-child .col:nth-child(3) hr {
+    padding: 0px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
