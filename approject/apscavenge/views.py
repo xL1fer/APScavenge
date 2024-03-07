@@ -226,13 +226,6 @@ class InfrastructureView(View):
         
         update_active_agents()
         agentstatus_objects = AgentStatus.objects.all()
-
-        # TODO: details page for a specific agent
-        """
-        agent_id = request.GET.get('agent', None)
-        if agent_id is not None and is_int(agent_id) and AgentStatus.objects.filter(id=agent_id):
-            return render(request, 'infrastructure_agent.html', {"agentstatus": AgentStatus.objects.get(id=agent_id)})
-        """
         
         return render(request, 'infrastructure.html', {"agentstatus_objects": agentstatus_objects})
 
@@ -248,45 +241,56 @@ class InfrastructureView(View):
             agentAction = request.POST['agentAction'].split('-')
             if is_int(agentAction[0]) and AgentStatus.objects.filter(id=agentAction[0]).exists():
                 agentstatus = AgentStatus.objects.get(id=agentAction[0])
-                if agentAction[1] == 'start':
-                    try:
-                        url = f'http://{agentstatus.ip}/start-attack-api'
-                        response = requests.get(url)
-                        print(f'Response: status code {response.status_code} | content {response.content}')
+                # Ensure we are not already performing a request to this agent
+                if not agentstatus.is_requesting:
+                    agentstatus.is_requesting = True
+                    agentstatus.save()
+                    
+                    if agentAction[1] == 'start':
+                        try:
+                            url = f'http://{agentstatus.ip}/start-attack-api'
+                            response = requests.get(url)
+                            print(f'Response: status code {response.status_code} | content {response.content}')
 
-                        if response.status_code == 200:
-                            agentstatus.is_attacking = True
+                            if response.status_code == 200:
+                                agentstatus.is_attacking = True
+                            agentstatus.save()
+
+                            for agent in agentstatus_objects:
+                                if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
+                                    try:
+                                        agent.message = json.loads(response.content.decode("UTF-8"))['message']
+                                    except ValueError as e:
+                                        pass
+
+                        except requests.exceptions.RequestException as e:
+                            agentstatus.delete()
+
+                    elif agentAction[1] == 'stop':
+                        try:
+                            url = f'http://{agentstatus.ip}/stop-attack-api'
+                            response = requests.get(url)
+                            print(f'Response: status code {response.status_code} | content {response.content}')
+
+                            agentstatus.is_attacking = False
+                            agentstatus.save()
+
+                            for agent in agentstatus_objects:
+                                if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
+                                    try:
+                                        agent.message = json.loads(response.content.decode("UTF-8"))['message']
+                                    except ValueError as e:
+                                        pass
+
+                        except requests.exceptions.RequestException as e:
+                            agentstatus.delete()
+                    
+                    if agentstatus is not None:
+                        agentstatus.is_requesting = False
                         agentstatus.save()
-
-                        for agent in agentstatus_objects:
-                            if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
-                                try:
-                                    agent.message = json.loads(response.content.decode("UTF-8"))['message']
-                                except ValueError as e:
-                                    pass
-
-                    except requests.exceptions.RequestException as e:
-                        agentstatus.delete()
-
-                elif agentAction[1] == 'stop':
-                    try:
-                        url = f'http://{agentstatus.ip}/stop-attack-api'
-                        response = requests.get(url)
-                        print(f'Response: status code {response.status_code} | content {response.content}')
-
-                        agentstatus.is_attacking = False
-                        agentstatus.save()
-
-                        for agent in agentstatus_objects:
-                            if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
-                                try:
-                                    agent.message = json.loads(response.content.decode("UTF-8"))['message']
-                                except ValueError as e:
-                                    pass
-
-                    except requests.exceptions.RequestException as e:
-                        agentstatus.delete()
-
+                else:
+                    pass
+                
         if request.POST.get('ajaxGridUpdate'):
             return render(request, 'infrastructure_grid.html', {"agentstatus_objects": agentstatus_objects})
 
@@ -350,7 +354,7 @@ def insert_dummy_data(request):
         Seizure(email=f"dummy{i}@realm").save()
 
     for i in range(dummy_count):
-        info_history = InfoHistory(user_type=f"Dummy Type {i}", user_info="No info provided.", area=f"Dummy Area {i}", seizure_email_id=f"dummy{i}@realm")
+        info_history = InfoHistory(user_type=f"Dummy Type {i}", user_info_id=-1, area=f"Dummy Area {i}", seizure_email_id=f"dummy{i}@realm")
         info_history.save()
 
         if i % 2:

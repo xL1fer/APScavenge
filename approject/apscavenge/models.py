@@ -26,7 +26,7 @@ class Seizure(models.Model):
 class InfoHistory(models.Model):
     id = models.BigAutoField(primary_key=True)
     user_type = models.CharField(max_length=64, blank=True)
-    user_info = models.TextField(blank=True)
+    user_info_id = models.BigIntegerField(null=True, blank=True)
     capture_time = models.DateTimeField(auto_now_add=True) #(default=timezone.now, auto_now_add=False)
     area = models.CharField(max_length=64, null=False, blank=False)
     seizure_email = models.ForeignKey(Seizure, on_delete=models.CASCADE)
@@ -43,8 +43,10 @@ class AgentStatus(models.Model):
     ip = models.CharField(max_length=32, unique=True, null=False, blank=False)
     token = models.CharField(max_length=128, blank=True)
     area = models.CharField(max_length=64, unique=True, null=False, blank=False)
+    alias_name = models.CharField(max_length=64, blank=True)
     is_online = models.BooleanField(default=True)
     is_attacking = models.BooleanField(default=False)
+    is_requesting = models.BooleanField(default=False)
     #heartbeat_fails = models.SmallIntegerField(default=0)
     last_heartbeat = models.DateTimeField(auto_now_add=True)
 
