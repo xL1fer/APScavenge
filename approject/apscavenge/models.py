@@ -50,5 +50,9 @@ class AgentStatus(models.Model):
     #heartbeat_fails = models.SmallIntegerField(default=0)
     last_heartbeat = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        self.area = self.area.lower()
+        super(AgentStatus, self).save(*args, **kwargs)
+
 #class User(AbstractUser):
 #    pass
