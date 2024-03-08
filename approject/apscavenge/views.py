@@ -395,6 +395,12 @@ class InfrastructureAgentView(View):
         if AgentStatus.objects.filter(area=area).exists():
             agentstatus = AgentStatus.objects.get(area=area)
 
+            if request.POST.get("ajaxAliasNameUpdate"):
+                if len(request.POST['ajaxAliasNameUpdate']) < 65:
+                    agentstatus.alias_name = request.POST['ajaxAliasNameUpdate']
+                    agentstatus.save()
+                return HttpResponse(status=200)
+
             infohistory_objects = InfoHistory.objects.filter(area=area, capture_time__gte=timezone.now() - timezone.timedelta(minutes=15))
 
             agent_seizures = {}

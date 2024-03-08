@@ -5,13 +5,13 @@
 <link rel="stylesheet" href="{% static 'css/infrastructure.css' %}">
 {% endblock %}
 
-{% block title_ext %}{{ agentstatus.area|upper }} Agent - {% endblock %}
+{% block title_ext %}{{ agentstatus.area }} Area Agent - {% endblock %}
 
 {% block main_class %} class="mt-5 mb-5"{% endblock %}
 
 {% block content %}
 
-<div class="page-indicator">APScavenge > Infrastructure <b>> <span class="underlined mb-5">{{ agentstatus.area|upper }} Agent</b></span></div>
+<div class="page-indicator">APScavenge > Infrastructure <b>> <span class="underlined mb-5">{{ agentstatus.area }} Area Agent</b></span></div>
 
 <div class="container details-grid">
     <div class="row">
@@ -21,7 +21,15 @@
             <div style="padding: 20px 10px 5px 10px;"><a href="#">sample option</a></div>
         </div>
         <div class="col">
-            <h3>&lt;{{ agentstatus.area|upper }}&gt; AREA AGENT</h3>
+            <h3>
+                &lt;
+                <form method="post" id="alias-name-form" enctype="multipart/form-data" style="display: inline-block;">
+                    {% csrf_token %}
+                    <input type="text" id="input-alias-name" name="alias-name" value="{{ agentstatus.alias_name }}" placeholder="alias name">
+                </form>
+                &gt;
+                Agent
+            </h3>
 
             {% for email, details in agent_seizures.items %}
             <div>
@@ -49,11 +57,39 @@
             <hr>
             <div><b>IP:<br/></b>{{ agentstatus.ip }}</div>
             <hr>
+            <div><b>Area:<br/></b>{{ agentstatus.area }}</div>
+            <hr>
             <div><b>Attacking:<br/></b>{{ agentstatus.is_attacking }}</div>
             <hr>
             <div><b>Last update:<br/></b>{{ agentstatus.last_heartbeat }}</div>
         </div>
     </div>
 </div>
+
+<script type="text/javascript">
+    function submitAliasNameForm() {
+        let csrf_token = $('[name="csrfmiddlewaretoken"]').val();   // Include CSRF token in AJAX request headers
+        let formData = $('#dashboard-table-form').serialize();  // Serialize form data
+        formData += '&ajaxAliasNameUpdate=' + encodeURIComponent(document.getElementById('input-alias-name').value);
+
+        $.ajax({
+            type: 'POST',
+            url: '{% url "infrastructure-agent" area=agentstatus.area %}',
+            data: formData,
+            headers: {
+                'X-CSRFToken': csrf_token
+            },
+            success: function (response) {
+            }
+        });
+    }
+
+    // Event handler for form submission
+    $(document).on('submit', '#alias-name-form', function (e) {
+        e.preventDefault();
+        submitAliasNameForm();
+        $('#input-alias-name').blur();
+    });
+</script>
 
 {% endblock %}
