@@ -17,7 +17,7 @@ class SeizureSerializer(serializers.ModelSerializer):
 class InfoHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = InfoHistory
-        fields = ['id', 'user_type', 'user_info', 'capture_time', 'area', 'seizure_email']
+        fields = ['id', 'user_type', 'user_info_id', 'capture_time', 'area', 'seizure_email']
 
 class PasswordHashSerializer(serializers.ModelSerializer):
     class Meta:
@@ -28,3 +28,10 @@ class AgentStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgentStatus
         fields = ['id', 'ip', 'token', 'area', 'alias_name', 'is_online', 'is_attacking', 'is_requesting', 'last_heartbeat']
+        
+    def to_internal_value(self, data):
+        try:
+            data['area'] = data['area'].lower()
+        except:
+            pass
+        return super(AgentStatusSerializer, self).to_internal_value(data)

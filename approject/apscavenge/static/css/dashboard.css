@@ -8,7 +8,7 @@
     position: fixed;
     left: 0;
     height: 100%;
-    width: 100px;
+    width: 125px;
     background-color: rgb(41, 41, 41);
     color: white;
     transition: all 0.3s ease;
@@ -34,7 +34,7 @@
 }
 
 .sidebar ul li {
-    padding: 30px 30px;
+    padding: 25px 0px;
     text-align: center;
     cursor: pointer;
 }

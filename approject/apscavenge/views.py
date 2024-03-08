@@ -23,11 +23,30 @@ from django.utils import timezone
 import requests
 import json
 
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization, hashes
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
+from cryptography.x509 import load_pem_x509_certificate
+
 # Create your views here.
 
 #from .tasks import init_tasks
 
 #init_tasks()
+
+# Load public key (certificate)
+with open("keys/apscavenge.pem", "rb") as cert_file:
+    cert_data = cert_file.read()
+    cert = load_pem_x509_certificate(cert_data, default_backend())
+    public_key = cert.public_key()
+
+# Load private key
+with open("keys/apscavenge.key", "rb") as key_file:
+    private_key = serialization.load_pem_private_key(
+        key_file.read(),
+        password=None,  # Password in case the private key file is encrypted
+        backend=default_backend()
+    )
 
 #####################################
 # Custom Django Template Filters    #
@@ -148,6 +167,42 @@ def update_active_agents():
 def is_int(arg):
     return type(arg) == int or type(arg) == str and arg.isdigit()
 
+def public_key_encryption(data_dict):
+    plaintext = json.dumps(data_dict).encode('utf-8')
+
+    # Encrypt payload with public key
+    ciphertext = public_key.encrypt(
+        plaintext,
+        padding.OAEP(
+            mgf=padding.MGF1(algorithm=hashes.SHA256()),
+            algorithm=hashes.SHA256(),
+            label=None
+        )
+    )
+
+    return {'encrypted_data': ciphertext.decode('latin-1')}
+
+def private_key_decryption(data):
+    plain_data = {}
+    if 'encrypted_data' in data:
+
+        # Decrypt ciphertext with private key
+        plaintext = private_key.decrypt(
+            data['encrypted_data'].encode('latin-1'),
+            padding.OAEP(
+                mgf=padding.MGF1(algorithm=hashes.SHA256()),
+                algorithm=hashes.SHA256(),
+                label=None
+            )
+        )
+
+        try:
+            return json.loads(plaintext)
+        except ValueError as e:
+            print("(ERROR) APScavenge: Decrypted text is not a valid json format")
+    
+    return plain_data
+
 #####################################
 # View Classes                      #
 #####################################
@@ -249,8 +304,8 @@ class InfrastructureView(View):
                     if agentAction[1] == 'start':
                         try:
                             url = f'http://{agentstatus.ip}/start-attack-api'
-                            response = requests.get(url)
-                            print(f'Response: status code {response.status_code} | content {response.content}')
+                            response = requests.post(url, json={"id": int(agentAction[0])})
+                            #print(f'Response: status code {response.status_code} | content {response.content}')
 
                             if response.status_code == 200:
                                 agentstatus.is_attacking = True
@@ -259,7 +314,9 @@ class InfrastructureView(View):
                             for agent in agentstatus_objects:
                                 if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
                                     try:
-                                        agent.message = json.loads(response.content.decode("UTF-8"))['message']
+                                        agent.message = private_key_decryption(json.loads(response.content.decode("UTF-8")))['message']
+                                        if agent.message == "Wrong agent id.":
+                                            agentstatus.delete()
                                     except ValueError as e:
                                         pass
 
@@ -269,8 +326,8 @@ class InfrastructureView(View):
                     elif agentAction[1] == 'stop':
                         try:
                             url = f'http://{agentstatus.ip}/stop-attack-api'
-                            response = requests.get(url)
-                            print(f'Response: status code {response.status_code} | content {response.content}')
+                            response = requests.post(url, json={"id": int(agentAction[0])})
+                            #print(f'Response: status code {response.status_code} | content {response.content}')
 
                             agentstatus.is_attacking = False
                             agentstatus.save()
@@ -278,14 +335,16 @@ class InfrastructureView(View):
                             for agent in agentstatus_objects:
                                 if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
                                     try:
-                                        agent.message = json.loads(response.content.decode("UTF-8"))['message']
+                                        agent.message = private_key_decryption(json.loads(response.content.decode("UTF-8")))['message']
+                                        if agent.message == "Wrong agent id.":
+                                            agentstatus.delete()
                                     except ValueError as e:
                                         pass
 
                         except requests.exceptions.RequestException as e:
                             agentstatus.delete()
                     
-                    if agentstatus is not None:
+                    if AgentStatus.objects.filter(id=agentAction[0]).exists():
                         agentstatus.is_requesting = False
                         agentstatus.save()
                 else:
@@ -304,9 +363,25 @@ class InfrastructureAgentView(View):
         if not authentication_handler(request):
             return redirect('login')
         
+        update_active_agents()
+        
         if AgentStatus.objects.filter(area=area).exists():
             agentstatus = AgentStatus.objects.get(area=area)
-            return render(request, 'infrastructure_agent.html', {'agentstatus': agentstatus})
+
+            infohistory_objects = InfoHistory.objects.filter(area=area, capture_time__gte=timezone.now() - timezone.timedelta(minutes=15))
+
+            agent_seizures = {}
+            for infohistory in infohistory_objects:
+                password_hash = None
+                try:
+                    password_hash = infohistory.passwordhash
+                except PasswordHash.DoesNotExist:
+                    pass
+
+                time_past = (timezone.now() - infohistory.capture_time).total_seconds() / 60
+                agent_seizures.setdefault(infohistory.seizure_email.email, []).append([f"Capture {infohistory.id}", f"{time_past:.2f} minute(s) ago", "Vulnerable" if password_hash else "Secure"])
+
+            return render(request, 'infrastructure_agent.html', {'agentstatus': agentstatus, 'agent_seizures': agent_seizures})
         
         return redirect('infrastructure')
 
@@ -315,11 +390,27 @@ class InfrastructureAgentView(View):
         if not authentication_handler(request):
             return redirect('login')
         
+        update_active_agents()
+        
         if AgentStatus.objects.filter(area=area).exists():
             agentstatus = AgentStatus.objects.get(area=area)
-            return render(request, 'infrastructure_agent.html', {'agentstatus': agentstatus})
+
+            infohistory_objects = InfoHistory.objects.filter(area=area, capture_time__gte=timezone.now() - timezone.timedelta(minutes=15))
+
+            agent_seizures = {}
+            for infohistory in infohistory_objects:
+                password_hash = None
+                try:
+                    password_hash = infohistory.passwordhash
+                except PasswordHash.DoesNotExist:
+                    pass
+
+                time_past = (timezone.now() - infohistory.capture_time).total_seconds() / 60
+                agent_seizures.setdefault(infohistory.seizure_email.email, []).append([f"Capture {infohistory.id}", f"{time_past:.2f} minute(s) ago", "Vulnerable" if password_hash else "Secure"])
+
+            return render(request, 'infrastructure_agent.html', {'agentstatus': agentstatus, 'agent_seizures': agent_seizures})
         
-        return render(request, 'infrastructure_agent.html')
+        return redirect('infrastructure')
 
 #####################################
 # View Functions                    #
@@ -348,13 +439,13 @@ def insert_dummy_data(request):
     if not authentication_handler(request):
         return HttpResponse('<h3>You must be authenticated.<h3>')
     
-    dummy_count = 50
+    dummy_count = 10
 
     for i in range(dummy_count):
         Seizure(email=f"dummy{i}@realm").save()
 
     for i in range(dummy_count):
-        info_history = InfoHistory(user_type=f"Dummy Type {i}", user_info_id=-1, area=f"Dummy Area {i}", seizure_email_id=f"dummy{i}@realm")
+        info_history = InfoHistory(user_type=f"Dummy Type {i}", user_info_id=-1, area=f"local", seizure_email_id=f"dummy{i}@realm")
         info_history.save()
 
         if i % 2:
@@ -401,25 +492,27 @@ class CentralHeartbeatAPI(APIView):
     def post(self, request, *args, **kwargs):
         update_active_agents()
 
+        plain_data = private_key_decryption(request.data)
+
         # Verify if request is from an already existing area agent
-        if 'area' in request.data and AgentStatus.objects.filter(area=request.data['area']).exists():
-            if 'id' in request.data and is_int(request.data['id']) and AgentStatus.objects.filter(id=request.data['id']).exists():
-                agentstatus = AgentStatus.objects.get(id=request.data['id'])
+        if 'area' in plain_data and AgentStatus.objects.filter(area=plain_data['area']).exists():
+            if 'id' in plain_data and is_int(plain_data['id']) and AgentStatus.objects.filter(id=plain_data['id']).exists():
+                agentstatus = AgentStatus.objects.get(id=plain_data['id'])
                 agentstatus.last_heartbeat = timezone.now()
-                if 'is_attacking' in request.data:
-                    agentstatus.is_attacking = True if request.data['is_attacking'] == True else False
+                if 'is_attacking' in plain_data:
+                    agentstatus.is_attacking = True if plain_data['is_attacking'] == True else False
                 agentstatus.save()
 
-                return Response({"last_heartbeat": agentstatus.last_heartbeat}, status=status.HTTP_200_OK)
+                return Response(public_key_encryption({"last_heartbeat": str(agentstatus.last_heartbeat)}), status=status.HTTP_200_OK)
             else:
-                return Response({"message": "Wrong area agent id."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(public_key_encryption({"message": "Wrong area agent id."}), status=status.HTTP_400_BAD_REQUEST)
 
-        serializer = AgentStatusSerializer(data=request.data)
+        serializer = AgentStatusSerializer(data=plain_data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(public_key_encryption(serializer.data), status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(public_key_encryption(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
 class SeizureAPI(APIView):
     """Seizure API handler"""
@@ -427,36 +520,40 @@ class SeizureAPI(APIView):
     # add permission to check if user is authenticated
     #permission_classes = [permissions.IsAuthenticated]
 
+    """
     def get(self, request, *args, **kwargs):
         seizure = Seizure.objects.all()
         serializer = SeizureSerializer(seizure, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    """
 
     def post(self, request, *args, **kwargs):
         if 'email' in request.data and AgentStatus.objects.filter(area=request.data['email']).exists():
             #seizure = Seizure.objects.get(email=request.data['email'])
-            return Response({'message': 'Email already registered.'}, status=status.HTTP_200_OK)
+            return Response(public_key_encryption({'message': 'Email already registered.'}), status=status.HTTP_200_OK)
 
         serializer = SeizureSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(public_key_encryption(serializer.data), status=status.HTTP_201_CREATED)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(public_key_encryption(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 
 class InfoHistoryAPI(APIView):
     """InfoHistory API handler"""
 
+    """
     def get(self, request, *args, **kwargs):
         info_history = InfoHistory.objects.all()
         serializer = InfoHistorySerializer(info_history, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    """
 
     def post(self, request, *args, **kwargs):
         infohistory_serializer = InfoHistorySerializer(data=request.data)
 
         if not infohistory_serializer.is_valid():
-            return Response(infohistory_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(public_key_encryption(infohistory_serializer.errors), status=status.HTTP_400_BAD_REQUEST)
         
         infohistory_serializer.save()
 
@@ -464,20 +561,22 @@ class InfoHistoryAPI(APIView):
             passwordhash = PasswordHash(asleap=request.data['asleap'], jtr=request.data['jtr'], hashcat=request.data['hashcat'], info_history_id=infohistory_serializer.data['id'])
             passwordhash.save()
         
-        return Response(infohistory_serializer.data, status=status.HTTP_201_CREATED)
+        return Response(public_key_encryption(infohistory_serializer.data), status=status.HTTP_201_CREATED)
 
 class PasswordHashAPI(APIView):
     """PasswordHash API handler"""
 
+    """
     def get(self, request, *args, **kwargs):
         password_hash = PasswordHash.objects.all()
         serializer = InfoHistorySerializer(password_hash, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    """
 
     def post(self, request, *args, **kwargs):
         serializer = PasswordHashSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(public_key_encryption(serializer.data), status=status.HTTP_201_CREATED)
         
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(public_key_encryption(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
