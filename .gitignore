@@ -160,5 +160,5 @@ cython_debug/
 #.idea/
 
 # Asymetric encryption
-.pem
-.key
+*.pem
+*.key
