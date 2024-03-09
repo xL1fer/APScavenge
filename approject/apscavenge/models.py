@@ -33,7 +33,7 @@ class InfoHistory(models.Model):
 
     def save(self, *args, **kwargs):
         self.area = self.area.lower()
-        super(AgentStatus, self).save(*args, **kwargs)
+        super(InfoHistory, self).save(*args, **kwargs)
 
 class PasswordHash(models.Model):
     id = models.BigAutoField(primary_key=True)
