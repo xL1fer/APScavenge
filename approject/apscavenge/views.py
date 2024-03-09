@@ -56,6 +56,10 @@ with open("keys/apscavenge.key", "rb") as key_file:
 def get_value(dictionary, key):
     return getattr(dictionary, key)
 
+@register.filter
+def mult(value1, value2):
+    return value1 * value2
+
 #####################################
 # Helper Functions                  #
 #####################################

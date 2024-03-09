@@ -67,7 +67,8 @@
 
 .details-grid .row:first-child .col:nth-child(2) h3 input {
     all: unset;
-    max-width: 150px;
+    min-width: 140px;
+    max-width: 400px;
     text-align: center;
 }
 
