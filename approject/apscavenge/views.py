@@ -35,13 +35,13 @@ from cryptography.x509 import load_pem_x509_certificate
 #init_tasks()
 
 # Load public key (certificate)
-with open("keys/apscavenge.pem", "rb") as cert_file:
+with open("keys/apscavenge.pem", 'rb') as cert_file:
     cert_data = cert_file.read()
     cert = load_pem_x509_certificate(cert_data, default_backend())
     public_key = cert.public_key()
 
 # Load private key
-with open("keys/apscavenge.key", "rb") as key_file:
+with open("keys/apscavenge.key", 'rb') as key_file:
     private_key = serialization.load_pem_private_key(
         key_file.read(),
         password=None,  # Password in case the private key file is encrypted
@@ -308,7 +308,7 @@ class InfrastructureView(View):
                     if agentAction[1] == 'start':
                         try:
                             url = f'http://{agentstatus.ip}/start-attack-api'
-                            response = requests.post(url, json={"id": int(agentAction[0])})
+                            response = requests.post(url, json=public_key_encryption({"id": int(agentAction[0])}))
                             #print(f'Response: status code {response.status_code} | content {response.content}')
 
                             if response.status_code == 200:
@@ -330,7 +330,7 @@ class InfrastructureView(View):
                     elif agentAction[1] == 'stop':
                         try:
                             url = f'http://{agentstatus.ip}/stop-attack-api'
-                            response = requests.post(url, json={"id": int(agentAction[0])})
+                            response = requests.post(url, json=public_key_encryption({"id": int(agentAction[0])}))
                             #print(f'Response: status code {response.status_code} | content {response.content}')
 
                             agentstatus.is_attacking = False
@@ -403,6 +403,21 @@ class InfrastructureAgentView(View):
                 if len(request.POST['ajaxAliasNameUpdate']) < 65:
                     agentstatus.alias_name = request.POST['ajaxAliasNameUpdate']
                     agentstatus.save()
+                return HttpResponse(status=200)
+            elif request.POST.get("ajaxAgentOption"):
+                if request.POST['ajaxAgentOption'] == 'clear-deny-list':
+                    try:
+                        url = f'http://{agentstatus.ip}/clear-deny-list-api'
+                        response = requests.post(url, json=public_key_encryption({"id": int(agentstatus.id)}))
+                        #print(f'Response: status code {response.status_code} | content {response.content}')
+
+                        if private_key_decryption(json.loads(response.content.decode("UTF-8")))['message'] == "Wrong agent id.":
+                            agentstatus.delete()
+                            return HttpResponse(status=400)
+
+                    except requests.exceptions.RequestException as e:
+                        agentstatus.delete()
+                        return HttpResponse(status=400)
                 return HttpResponse(status=200)
 
             infohistory_objects = InfoHistory.objects.filter(area=area, capture_time__gte=timezone.now() - timezone.timedelta(minutes=15))

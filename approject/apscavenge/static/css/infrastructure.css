@@ -57,6 +57,16 @@
     margin: 10px;
 }
 
+.details-grid .row:first-child .col:first-child button {
+    border: 0;
+    background-color: white;
+    color: #ef9a38;
+}
+
+.details-grid .row:first-child .col:first-child button:hover {
+    text-decoration: underline;
+}
+
 .details-grid .row:first-child .col:nth-child(2) {
     min-height: 250px;
     min-width: 600px;
