@@ -238,7 +238,7 @@ class LoginView(View):
         return render(request, 'login.html', {'login_form': login_form, 'login_message': 'Invalid user credentials.'})
 
 class DashboardView(View):
-    """Dashboard page render handler"""
+    """Dashboard tables page render handler"""
 
     def get(self, request):
         assert isinstance(request, HttpRequest)
@@ -275,6 +275,23 @@ class DashboardView(View):
         
         return render(request, 'dashboard.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
     
+class DashboardStatsView(View):
+    """Dashboard stats page render handler"""
+
+    def get(self, request):
+        assert isinstance(request, HttpRequest)
+        if not authentication_handler(request):
+            return redirect('login')
+
+        return render(request, 'dashboard.html')
+    
+    def post(self, request):
+        assert isinstance(request, HttpRequest)
+        if not authentication_handler(request):
+            return redirect('login')
+
+        return render(request, 'dashboard.html')
+
 class InfrastructureView(View):
     """Infrastructure page render handler"""
 

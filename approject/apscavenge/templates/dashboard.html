@@ -13,8 +13,8 @@
 
 <div class="sidebar">
     <ul id="ul-sidebar">
-        <a href="#"><li>Tables</li></a>
-        <a href="#"><li>Stats</li></a>
+        <a href="{% url 'dashboard' %}"><li>Tables</li></a>
+        <a href="{% url 'dashboard-stats' %}"><li>Stats</li></a>
         <a class="sidebar-hidden" id="a-sidebar-toggle"><li style="margin-top: 50%">Close</li></a>
     </ul>
 </div>
@@ -22,14 +22,22 @@
     <div class="page-indicator">
         APScavenge <b>> 
         <span class="underlined">Dashboard</b></span>
+        {% if request.path == '/dashboard' %}
         <form method="post" enctype="multipart/form-data" style="display: inline-block;">
             {% csrf_token %}
             <span> > {{ select_table_form.table_select }}</span>
         </form>
+        {% elif request.path == '/dashboard-stats' %}
+        > Stats
+        {% endif %}
         <span class="sidebar-hidden" id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></span>
     </div>
 
-    {% include "dashboard_table.html" %}
+    {% if request.path == '/dashboard' %}
+        {% include "dashboard_table.html" %}
+    {% elif request.path == '/dashboard-stats' %}
+        {% include "dashboard_stats.html" %}
+    {% endif %}
 
     <script type="text/javascript">
         function submitTableForm() {
