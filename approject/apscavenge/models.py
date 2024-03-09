@@ -31,6 +31,10 @@ class InfoHistory(models.Model):
     area = models.CharField(max_length=64, null=False, blank=False)
     seizure_email = models.ForeignKey(Seizure, on_delete=models.CASCADE)
 
+    def save(self, *args, **kwargs):
+        self.area = self.area.lower()
+        super(AgentStatus, self).save(*args, **kwargs)
+
 class PasswordHash(models.Model):
     id = models.BigAutoField(primary_key=True)
     asleap = models.CharField(max_length=256, blank=True)

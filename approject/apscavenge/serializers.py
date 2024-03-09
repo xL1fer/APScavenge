@@ -19,6 +19,13 @@ class InfoHistorySerializer(serializers.ModelSerializer):
         model = InfoHistory
         fields = ['id', 'user_type', 'user_info_id', 'capture_time', 'area', 'seizure_email']
 
+    def to_internal_value(self, data):
+        try:
+            data['area'] = data['area'].lower()
+        except:
+            pass
+        return super(AgentStatusSerializer, self).to_internal_value(data)
+
 class PasswordHashSerializer(serializers.ModelSerializer):
     class Meta:
         model = PasswordHash
