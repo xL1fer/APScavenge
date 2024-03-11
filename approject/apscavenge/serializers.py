@@ -24,7 +24,7 @@ class InfoHistorySerializer(serializers.ModelSerializer):
             data['area'] = data['area'].lower()
         except:
             pass
-        return super(AgentStatusSerializer, self).to_internal_value(data)
+        return super(InfoHistorySerializer, self).to_internal_value(data)
 
 class PasswordHashSerializer(serializers.ModelSerializer):
     class Meta:

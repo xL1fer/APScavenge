@@ -269,11 +269,11 @@ class DashboardView(View):
         # ajax request, return only a sub portion of the dashboard content
         if request.POST.get('ajaxTableUpdate'):
             if request.POST.get('ajaxSubTableUpdate'):
-                return render(request, 'dashboard_subtable.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
+                return render(request, 'dashboard_subtable.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
             
-            return render(request, 'dashboard_table.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
+            return render(request, 'dashboard_table.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
         
-        return render(request, 'dashboard.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
+        return render(request, 'dashboard.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
     
 class DashboardStatsView(View):
     """Dashboard stats page render handler"""
@@ -282,8 +282,22 @@ class DashboardStatsView(View):
         assert isinstance(request, HttpRequest)
         if not authentication_handler(request):
             return redirect('login')
+        
+        areas_stats = {area : [] for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
 
-        return render(request, 'dashboard.html')
+        for area in areas_stats:
+            # emails with at least one associated passwordhash
+            vulnerable_emails = InfoHistory.objects.filter(area=area, passwordhash__isnull=False).values_list('seizure_email__email', flat=True).distinct()
+            vulnerable_num = len(vulnerable_emails)
+
+            # emails without any associated passwordhash for the current area
+            secure_emails = [email for email in InfoHistory.objects.filter(area=area, passwordhash__isnull=True).values_list('seizure_email__email', flat=True).distinct() if email not in vulnerable_emails]
+            secure_num = len(secure_emails)
+
+            # add the results to the dictionary
+            areas_stats[area] = [secure_num, vulnerable_num]
+
+        return render(request, 'dashboard.html', {'areas_stats': areas_stats})
     
     def post(self, request):
         assert isinstance(request, HttpRequest)
@@ -487,7 +501,7 @@ def insert_dummy_data(request):
         Seizure(email=f"dummy{i}@realm").save()
 
     for i in range(dummy_count):
-        info_history = InfoHistory(user_type=f"Dummy Type {i}", user_info_id=-1, area=f"local", seizure_email_id=f"dummy{i}@realm")
+        info_history = InfoHistory(user_type=f"Dummy Type {i}", user_info_id=-1, area=f"dummy", seizure_email_id=f"dummy{i}@realm")
         info_history.save()
 
         if i % 2:
@@ -570,11 +584,13 @@ class SeizureAPI(APIView):
     """
 
     def post(self, request, *args, **kwargs):
-        if 'email' in request.data and AgentStatus.objects.filter(area=request.data['email']).exists():
-            #seizure = Seizure.objects.get(email=request.data['email'])
+        plain_data = private_key_decryption(request.data)
+
+        if 'email' in plain_data and Seizure.objects.filter(email=plain_data['email']).exists():
+            #seizure = Seizure.objects.get(email=plain_data['email'])
             return Response(public_key_encryption({'message': 'Email already registered.'}), status=status.HTTP_200_OK)
 
-        serializer = SeizureSerializer(data=request.data)
+        serializer = SeizureSerializer(data=plain_data)
         if serializer.is_valid():
             serializer.save()
             return Response(public_key_encryption(serializer.data), status=status.HTTP_201_CREATED)
@@ -592,15 +608,17 @@ class InfoHistoryAPI(APIView):
     """
 
     def post(self, request, *args, **kwargs):
-        infohistory_serializer = InfoHistorySerializer(data=request.data)
+        plain_data = private_key_decryption(request.data)
+
+        infohistory_serializer = InfoHistorySerializer(data=plain_data)
 
         if not infohistory_serializer.is_valid():
             return Response(public_key_encryption(infohistory_serializer.errors), status=status.HTTP_400_BAD_REQUEST)
         
         infohistory_serializer.save()
 
-        if 'asleap' in request.data and 'jtr' in request.data and 'hashcat' in request.data:
-            passwordhash = PasswordHash(asleap=request.data['asleap'], jtr=request.data['jtr'], hashcat=request.data['hashcat'], info_history_id=infohistory_serializer.data['id'])
+        if 'asleap' in plain_data and plain_data['asleap'] is not None and 'jtr' in plain_data and plain_data['jtr'] is not None and 'hashcat' in plain_data and plain_data['hashcat'] is not None:
+            passwordhash = PasswordHash(asleap=plain_data['asleap'], jtr=plain_data['jtr'], hashcat=plain_data['hashcat'], info_history_id=infohistory_serializer.data['id'])
             passwordhash.save()
         
         return Response(public_key_encryption(infohistory_serializer.data), status=status.HTTP_201_CREATED)
@@ -616,7 +634,9 @@ class PasswordHashAPI(APIView):
     """
 
     def post(self, request, *args, **kwargs):
-        serializer = PasswordHashSerializer(data=request.data)
+        plain_data = private_key_decryption(request.data)
+
+        serializer = PasswordHashSerializer(data=plain_data)
         if serializer.is_valid():
             serializer.save()
             return Response(public_key_encryption(serializer.data), status=status.HTTP_201_CREATED)
