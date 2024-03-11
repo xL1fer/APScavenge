@@ -1,0 +1,60 @@
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+</style>
+
+<div class="center">
+    <div style="display: inline-block;">
+        <canvas class="doughnut"></canvas>
+    </div>
+    <div style="display: inline-block;">
+        <canvas class="doughnut"></canvas>
+    </div>
+    <div style="display: inline-block;">
+        <canvas class="doughnut"></canvas>
+    </div>
+</div>
+
+<script>
+    // Setup
+    const data = {
+        labels: [
+            'Secure',
+            'Vulnerable'
+        ],
+        datasets: [{
+            label: `"test" Area Users`,
+            data: [200, 70],
+            backgroundColor: [
+                'rgb(80, 202, 80)',
+                'rgb(226, 96, 96)'
+            ],
+        hoverOffset: 4
+        }]
+    };
+
+    // Config
+    const config = {
+        type: 'doughnut',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%', // Adjust the cutout percentage to control the size of the doughnut
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: `"test" Area Vulnerability Ratio`
+                }
+            }
+        },
+    };
+
+    const chartElements = document.querySelectorAll('.doughnut');
+    chartElements.forEach((element) => {
+        new Chart(element.getContext('2d'), config);
+    });
+</script>
