@@ -11,6 +11,17 @@
 
 {% block content %}
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{% static 'js/dashboard.js' %}" defer></script>
+<script type="text/javascript">
+    /* Varaibles declaration for external javascript file */
+    const dashboardURL = '{% url "dashboard" %}';
+    let requestModel = '{{ table_data.current_model }}';
+    {% if areas_stats is not None %}
+    const areasStatsData = {{ areas_stats|safe }};
+    {% endif %}
+</script>
+
 <div class="sidebar">
     <ul id="ul-sidebar">
         <a href="{% url 'dashboard' %}"><li>Tables</li></a>
@@ -38,87 +49,6 @@
     {% elif request.path == '/dashboard-stats' %}
         {% include "dashboard_stats.html" %}
     {% endif %}
-
-    <script type="text/javascript">
-        function submitTableForm() {
-            let csrf_token = $('[name="csrfmiddlewaretoken"]').val();   // Include CSRF token in AJAX request headers
-            let formData = $('#dashboard-table-form').serialize();  // Serialize form data
-            formData += '&ajaxTableUpdate=' + encodeURIComponent('True');
-
-            let requestModel = '{{ table_data.current_model }}';
-            formData += '&requestModel=' + encodeURIComponent(requestModel);
-
-            $.ajax({
-                type: 'POST',
-                url: '{% url "dashboard" %}',
-                data: formData,
-                headers: {
-                    'X-CSRFToken': csrf_token
-                },
-                success: function (response) {
-                    $('#dashboard-table-form').html(response);
-                }
-            });
-        }
-
-        // Event handler for form submission
-        $(document).on('submit', '#dashboard-table-form', function (e) {
-            e.preventDefault();
-            submitTableForm();
-        });
-
-        // Event handler for <a> elements
-        $(document).on('click', '#dashboard-table-form .prevent-select a', function (e) {
-            e.preventDefault();
-            submitTableForm();
-        });
-
-        // Event handler for <select> element
-        $(document).on('change', '#dashboard-table-form select', function () {
-            submitTableForm();
-        });
-
-        $(document).on('click', '.clickable-row', function (e) {
-            let toggleId = $(this).attr('data-toggle-id');
-            if (toggleId.includes('passwordhash'))
-                return;
-            
-            let detailsRow = document.getElementById(toggleId + '_details');
-            if (detailsRow) {
-                if (detailsRow.style.display === 'none') {
-                    detailsRow.style.display = '';
-                    $(this).css('background-color', 'rgba(239, 154, 56, 0.3)');
-
-                    let csrf_token = $('[name="csrfmiddlewaretoken"]').val();   // Include CSRF token in AJAX request headers
-                    let formData = $('#dashboard-table-form').serialize();  // Serialize form data
-                    formData += '&ajaxTableUpdate=' + encodeURIComponent('True');
-                    formData += '&ajaxSubTableUpdate=' + encodeURIComponent('True');
-
-                    let relationField = $(this).attr('relation-data-model');
-                    let previousModel = toggleId.split('_')[0];
-                    formData += '&previousModel=' + encodeURIComponent(previousModel);
-                    formData += '&requestModel=' + encodeURIComponent(relationField);
-                    formData += '&requestValue=' + encodeURIComponent($(this).find('td').eq(0).text());
-
-                    $.ajax({
-                        type: 'POST',
-                        url: '{% url "dashboard" %}',
-                        data: formData,
-                        headers: {
-                            'X-CSRFToken': csrf_token
-                        },
-                        success: function (response) {
-                            $('#' + toggleId + '_details' + ' span').html(response);
-                        }
-                    });
-                } else {
-                    detailsRow.style.display = 'none';
-                    $(this).css('background-color', '');
-                    $('#' + toggleId + '_details' + ' span').html('');
-                }
-            }
-        });
-    </script>
 
     <!--
     <table class="table">

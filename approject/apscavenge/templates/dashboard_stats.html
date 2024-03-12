@@ -1,8 +1,3 @@
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<style>
-</style>
-
 <div class="center">
     {% for area in areas_stats %}
     <div style="display: inline-block;">
@@ -15,56 +10,3 @@
     <h5>No current stats</h5>
     {% endif %}
 </div>
-
-<script>
-    // Setup
-    let data = {
-        labels: [
-            'Secure',
-            'Vulnerable'
-        ],
-        datasets: [{
-            label: null,
-            data: null,
-            backgroundColor: [
-                'rgb(80, 202, 80)',
-                'rgb(226, 96, 96)'
-            ],
-            hoverOffset: 4
-        }]
-    };
-
-    // Config
-    let config = {
-        type: 'doughnut',
-        data: null,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '70%', // Adjust the cutout percentage to control the size of the doughnut
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: null
-                }
-            }
-        },
-    };
-
-    const areasStatsData = {{ areas_stats|safe }};
-    const chartElements = document.querySelectorAll('.doughnut');
-    chartElements.forEach((element, index) => {
-        let currentArea = element.getAttribute('id');
-
-        data.datasets[0].label = `Users`;
-        data.datasets[0].data = areasStatsData[currentArea];
-
-        config.data = data;
-        config.options.plugins.title.text = `"${currentArea}" Area Vulnerability Ratio`;
-
-        new Chart(element.getContext('2d'), config);
-    });
-</script>

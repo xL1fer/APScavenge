@@ -11,43 +11,14 @@
 
 {% block content %}
 
+<script src="{% static 'js/infrastructure.js' %}"></script>
+<script type="text/javascript">
+    /* Varaibles declaration for external javascript file */
+    const infrastructureURL = '{% url "infrastructure" %}';
+</script>
+
 <div class="page-indicator">APScavenge <b>> <span class="underlined mb-5">Infrastructure</b></span></div>
 
 {% include "infrastructure_grid.html" %}
-
-<script type="text/javascript">
-    function submitGridForm(agentAction) {
-        let csrf_token = $('[name="csrfmiddlewaretoken"]').val();   // Include CSRF token in AJAX request headers
-        let formData = $('#infrastructure-grid-form').serialize();  // Serialize form data
-        formData += '&ajaxGridUpdate=' + encodeURIComponent('True');
-
-        formData += '&agentAction=' + encodeURIComponent(agentAction);
-
-        $.ajax({
-            type: 'POST',
-            url: '{% url "infrastructure" %}',
-            data: formData,
-            headers: {
-                'X-CSRFToken': csrf_token
-            },
-            success: function (response) {
-                $('#infrastructure-grid-form').html(response);
-            }
-        });
-    }
-
-    // Event handler for form submission
-    //$(document).on('submit', '#infrastructure-grid-form', function (e) {
-    //    e.preventDefault();
-    //    submitGridForm();
-    //});
-
-    $(document).on('click', '#infrastructure-grid-form button', function (e) {
-        $(this).prop('disabled', true);
-        $(this).addClass('action-disabled');
-        e.preventDefault();
-        submitGridForm($(this).attr('id'));
-    });
-</script>
 
 {% endblock %}
