@@ -11,15 +11,11 @@
 
 {% block content %}
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'js/dashboard.js' %}" defer></script>
 <script type="text/javascript">
     /* Varaibles declaration for external javascript file */
     const dashboardURL = '{% url "dashboard" %}';
     let requestModel = '{{ table_data.current_model }}';
-    {% if areas_stats is not None %}
-    const areasStatsData = {{ areas_stats|safe }};
-    {% endif %}
 </script>
 
 <div class="sidebar">
@@ -33,22 +29,15 @@
     <div class="page-indicator">
         APScavenge <b>> 
         <span class="underlined">Dashboard</b></span>
-        {% if request.path == '/dashboard' %}
+        > Tables
         <form method="post" enctype="multipart/form-data" style="display: inline-block;">
             {% csrf_token %}
             <span> > {{ select_table_form.table_select }}</span>
         </form>
-        {% elif request.path == '/dashboard-stats' %}
-        > Stats
-        {% endif %}
         <span class="sidebar-hidden" id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></span>
     </div>
 
-    {% if request.path == '/dashboard' %}
-        {% include "dashboard_table.html" %}
-    {% elif request.path == '/dashboard-stats' %}
-        {% include "dashboard_stats.html" %}
-    {% endif %}
+    {% include "dashboard_table.html" %}
 
     <!--
     <table class="table">

@@ -297,14 +297,14 @@ class DashboardStatsView(View):
             # add the results to the dictionary
             areas_stats[area] = [secure_num, vulnerable_num]
 
-        return render(request, 'dashboard.html', {'areas_stats': areas_stats})
+        return render(request, 'dashboard_stats.html', {'areas_stats': areas_stats})
     
     def post(self, request):
         assert isinstance(request, HttpRequest)
         if not authentication_handler(request):
             return redirect('login')
 
-        return render(request, 'dashboard.html')
+        return render(request, 'dashboard_stats.html')
 
 class InfrastructureView(View):
     """Infrastructure page render handler"""
@@ -383,7 +383,9 @@ class InfrastructureView(View):
                         agentstatus.is_requesting = False
                         agentstatus.save()
                 else:
-                    pass
+                    for agent in agentstatus_objects:
+                        if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
+                            agent.message = "Pending request."
                 
         if request.POST.get('ajaxGridUpdate'):
             return render(request, 'infrastructure_grid.html', {"agentstatus_objects": agentstatus_objects})
@@ -414,7 +416,9 @@ class InfrastructureAgentView(View):
                     pass
 
                 time_past = (timezone.now() - infohistory.capture_time).total_seconds() / 60
-                agent_seizures.setdefault(infohistory.seizure_email.email, []).append([f"Capture {infohistory.id}", f"{time_past:.2f} minute(s) ago", "Vulnerable" if password_hash else "Secure"])
+                agent_seizures.setdefault(infohistory.seizure_email.email, []).append([f"Capture {infohistory.id}", "Vulnerable" if password_hash else "Secure", f"{time_past:.2f} minute(s) ago"])
+
+            agent_seizures = sorted(agent_seizures.items(), key=lambda x: min(info[2] for info in x[1]))
 
             return render(request, 'infrastructure_agent.html', {'agentstatus': agentstatus, 'agent_seizures': agent_seizures})
         
