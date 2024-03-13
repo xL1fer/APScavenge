@@ -160,10 +160,10 @@ $(document).on('click', '.clickable-row', function (e) {
 
 
 /*
-*   Dashboard stats doughnut charts render
+*   Dashboard stats charts render
 */
-// Setup
-let data = {
+// Doughtnut chart setup
+let doughnutChartData = {
     labels: [
         'Secure',
         'Vulnerable'
@@ -178,8 +178,8 @@ let data = {
         hoverOffset: 4
     }]
 };
-// Config
-let config = {
+// Doughtnut chart config
+let doughnutChartConfig = {
     type: 'doughnut',
     data: null,
     options: {
@@ -197,16 +197,65 @@ let config = {
         }
     },
 };
-
-const chartElements = document.querySelectorAll('.doughnut');
-chartElements.forEach((element, index) => {
+const doughnutChartElements = document.querySelectorAll('.doughnut-chart');
+doughnutChartElements.forEach((element, index) => {
     let currentArea = element.getAttribute('id');
 
-    data.datasets[0].label = `Users`;
-    data.datasets[0].data = areasStatsData[currentArea];
+    doughnutChartData.datasets[0].label = `Users`;
+    doughnutChartData.datasets[0].data = areasStatsData[currentArea];
 
-    config.data = data;
-    config.options.plugins.title.text = `"${currentArea}" Area Vulnerability Ratio`;
+    doughnutChartConfig.data = doughnutChartData;
+    doughnutChartConfig.options.plugins.title.text = `"${currentArea}" Area Vulnerability Ratio`;
 
-    new Chart(element.getContext('2d'), config);
+    new Chart(element.getContext('2d'), doughnutChartConfig);
+});
+
+// Line chart setup
+let lineChartData = {
+    labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+    datasets: []
+};
+// Line chart config
+let lineChartConfig = {
+    type: 'line',
+    data: lineChartData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+    }
+};
+
+//new Chart(document.getElementById('test-line-chart').getContext('2d'), lineChartConfig);
+
+const lineChartElements = document.querySelectorAll('.line-chart');
+lineChartElements.forEach((element) => {
+    let currentArea = element.getAttribute('id');
+
+    let sampleDataSet = {
+        label: null,
+        data: null,
+        fill: false,
+        borderColor: '#ef9a38',
+        tension: 0.1
+    }
+
+    lineChartData.labels = areasWeekylData[currentArea][0];
+
+    sampleDataSet.label = `Total Captures`;
+    sampleDataSet.data = areasWeekylData[currentArea][1];
+    lineChartData.datasets.push(JSON.parse(JSON.stringify(sampleDataSet))); // NOTE: JSON.parse(JSON.stringify(my_object)) creates a new object, otherwise a reference would be passed
+
+    sampleDataSet.label = `Secure Captures`;
+    sampleDataSet.data = areasWeekylData[currentArea][2];
+    sampleDataSet.borderColor = "rgb(80, 202, 80)";
+    lineChartData.datasets.push(JSON.parse(JSON.stringify(sampleDataSet)));
+
+    sampleDataSet.label = `Vulnerable Captures`;
+    sampleDataSet.data = areasWeekylData[currentArea][3];
+    sampleDataSet.borderColor = "rgb(226, 96, 96)";
+    lineChartData.datasets.push(JSON.parse(JSON.stringify(sampleDataSet)));
+
+    lineChartConfig.data = lineChartData;
+
+    new Chart(element.getContext('2d'), lineChartConfig);
 });

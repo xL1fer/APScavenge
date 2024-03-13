@@ -20,6 +20,8 @@ from django.template.defaulttags import register
 
 from django.utils import timezone
 
+from datetime import datetime, timedelta
+
 import requests
 import json
 
@@ -284,6 +286,8 @@ class DashboardStatsView(View):
             return redirect('login')
         
         areas_stats = {area : [] for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
+        areas_captures = {area : [] for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
+        areas_weekly = {area : [[], [], [], []] for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
 
         for area in areas_stats:
             # emails with at least one associated passwordhash
@@ -297,7 +301,31 @@ class DashboardStatsView(View):
             # add the results to the dictionary
             areas_stats[area] = [secure_num, vulnerable_num]
 
-        return render(request, 'dashboard_stats.html', {'areas_stats': areas_stats})
+            infohistory_objects = InfoHistory.objects.filter(area=area).order_by('capture_time').reverse()[:10]
+            for infohistory in infohistory_objects:
+                password_hash = None
+                try:
+                    password_hash = infohistory.passwordhash
+                except PasswordHash.DoesNotExist:
+                    pass
+
+                time_past = (timezone.now() - infohistory.capture_time).total_seconds() / 60
+                areas_captures[area].append([f"Capture {infohistory.id}", "Vulnerable" if password_hash else "Secure", f"{time_past:.2f} minute(s) ago"])
+            
+            cur_time = timezone.now()
+            for i in range(1, 7):
+                weeks_ago = cur_time - timedelta(weeks=i)
+                weeks_range = cur_time - timedelta(weeks=i - 1)
+                
+                info_history_secure_count = InfoHistory.objects.filter(area=area, passwordhash__isnull=True, capture_time__gte=weeks_ago, capture_time__lte=weeks_range).count()
+                info_history_vulnerable_count = InfoHistory.objects.filter(area=area, passwordhash__isnull=False, capture_time__gte=weeks_ago, capture_time__lte=weeks_range).count()
+
+                areas_weekly[area][0].append(f"{i} week(s) ago")
+                areas_weekly[area][1].append(info_history_secure_count + info_history_vulnerable_count)
+                areas_weekly[area][2].append(info_history_secure_count)
+                areas_weekly[area][3].append(info_history_vulnerable_count)
+ 
+        return render(request, 'dashboard_stats.html', {'areas_stats': areas_stats, 'areas_captures': areas_captures, 'areas_weekly': areas_weekly})
     
     def post(self, request):
         assert isinstance(request, HttpRequest)
