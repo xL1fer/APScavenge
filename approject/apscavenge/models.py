@@ -44,7 +44,7 @@ class PasswordHash(models.Model):
 
 class AgentStatus(models.Model):
     id = models.BigAutoField(primary_key=True)
-    ip = models.CharField(max_length=32, unique=True, null=False, blank=False)
+    ip = models.CharField(max_length=32, null=False, blank=False)
     token = models.CharField(max_length=128, blank=True)
     area = models.CharField(max_length=64, unique=True, null=False, blank=False)
     alias_name = models.CharField(max_length=64, blank=True)

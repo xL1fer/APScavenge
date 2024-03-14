@@ -285,9 +285,7 @@ class DashboardStatsView(View):
         if not authentication_handler(request):
             return redirect('login')
         
-        areas_stats = {area : [] for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
-        areas_captures = {area : [] for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
-        areas_weekly = {area : [[], [], [], []] for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
+        areas_stats = {area : {'ratio':[], 'captures':[], 'weekly':[[], [], [], []]} for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
 
         for area in areas_stats:
             # emails with at least one associated passwordhash
@@ -299,7 +297,7 @@ class DashboardStatsView(View):
             secure_num = len(secure_emails)
 
             # add the results to the dictionary
-            areas_stats[area] = [secure_num, vulnerable_num]
+            areas_stats[area]['ratio'] = [secure_num, vulnerable_num]
 
             infohistory_objects = InfoHistory.objects.filter(area=area).order_by('capture_time').reverse()[:10]
             for infohistory in infohistory_objects:
@@ -310,7 +308,14 @@ class DashboardStatsView(View):
                     pass
 
                 time_past = (timezone.now() - infohistory.capture_time).total_seconds() / 60
-                areas_captures[area].append([f"Capture {infohistory.id}", "Vulnerable" if password_hash else "Secure", f"{time_past:.2f} minute(s) ago"])
+                time_descriptor = 'minute'
+                if time_past > 60:
+                    time_past /= 60
+                    time_descriptor = 'hour'
+                if time_past > 24:
+                    time_past /= 24
+                    time_descriptor = 'day'
+                areas_stats[area]['captures'].append([f"Capture {infohistory.id}", "Vulnerable" if password_hash else "Secure", f"{time_past:.2f} {time_descriptor}(s) ago"])
             
             cur_time = timezone.now()
             for i in range(1, 7):
@@ -320,12 +325,12 @@ class DashboardStatsView(View):
                 info_history_secure_count = InfoHistory.objects.filter(area=area, passwordhash__isnull=True, capture_time__gte=weeks_ago, capture_time__lte=weeks_range).count()
                 info_history_vulnerable_count = InfoHistory.objects.filter(area=area, passwordhash__isnull=False, capture_time__gte=weeks_ago, capture_time__lte=weeks_range).count()
 
-                areas_weekly[area][0].append(f"{i} week(s) ago")
-                areas_weekly[area][1].append(info_history_secure_count + info_history_vulnerable_count)
-                areas_weekly[area][2].append(info_history_secure_count)
-                areas_weekly[area][3].append(info_history_vulnerable_count)
+                areas_stats[area]['weekly'][0].append(f"{i} week(s) ago")
+                areas_stats[area]['weekly'][1].append(info_history_secure_count + info_history_vulnerable_count)
+                areas_stats[area]['weekly'][2].append(info_history_secure_count)
+                areas_stats[area]['weekly'][3].append(info_history_vulnerable_count)
  
-        return render(request, 'dashboard_stats.html', {'areas_stats': areas_stats, 'areas_captures': areas_captures, 'areas_weekly': areas_weekly})
+        return render(request, 'dashboard_stats.html', {'areas_stats': areas_stats})
     
     def post(self, request):
         assert isinstance(request, HttpRequest)

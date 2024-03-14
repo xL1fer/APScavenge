@@ -169,7 +169,7 @@ let doughnutChartData = {
         'Vulnerable'
     ],
     datasets: [{
-        label: null,
+        label: `Users`,
         data: null,
         backgroundColor: [
             'rgb(80, 202, 80)',
@@ -199,21 +199,45 @@ let doughnutChartConfig = {
 };
 const doughnutChartElements = document.querySelectorAll('.doughnut-chart');
 doughnutChartElements.forEach((element, index) => {
-    let currentArea = element.getAttribute('id');
+    let currentArea = element.getAttribute('area');
 
-    doughnutChartData.datasets[0].label = `Users`;
-    doughnutChartData.datasets[0].data = areasStatsData[currentArea];
+    let newData = JSON.parse(JSON.stringify(doughnutChartData));
+    let newConfig = JSON.parse(JSON.stringify(doughnutChartConfig));
 
-    doughnutChartConfig.data = doughnutChartData;
-    doughnutChartConfig.options.plugins.title.text = `"${currentArea}" Area Vulnerability Ratio`;
+    newData.datasets[0].data = areasStatsData[currentArea].ratio;
 
-    new Chart(element.getContext('2d'), doughnutChartConfig);
+    let vulnerableRatio = areasStatsData[currentArea].ratio[1] / areasStatsData[currentArea].ratio.reduce((sum, curValue) => sum + curValue, 0) * 100;
+
+    newConfig.data = newData;
+    newConfig.options.plugins.title.text = `"${currentArea}" Area Vulnerability Ratio: ${vulnerableRatio}%`;
+
+    new Chart(element.getContext('2d'), newConfig);
 });
 
 // Line chart setup
 let lineChartData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-    datasets: []
+    datasets: [{
+        label: `Total Captures`,
+        data: null,
+        fill: false,
+        borderColor: '#ef9a38',
+        tension: 0.1
+    },
+    {
+        label: `Secure Captures`,
+        data: null,
+        fill: false,
+        borderColor: 'rgb(80, 202, 80)',
+        tension: 0.1
+    },
+    {
+        label: `Vulnerable Captures`,
+        data: null,
+        fill: false,
+        borderColor: 'rgb(226, 96, 96)',
+        tension: 0.1
+    },]
 };
 // Line chart config
 let lineChartConfig = {
@@ -229,33 +253,17 @@ let lineChartConfig = {
 
 const lineChartElements = document.querySelectorAll('.line-chart');
 lineChartElements.forEach((element) => {
-    let currentArea = element.getAttribute('id');
+    let currentArea = element.getAttribute('area');
 
-    let sampleDataSet = {
-        label: null,
-        data: null,
-        fill: false,
-        borderColor: '#ef9a38',
-        tension: 0.1
-    }
+    let newData = JSON.parse(JSON.stringify(lineChartData));
+    let newConfig = JSON.parse(JSON.stringify(lineChartConfig));
 
-    lineChartData.labels = areasWeekylData[currentArea][0];
+    newData.labels = areasStatsData[currentArea].weekly[0];
+    newData.datasets[0].data = areasStatsData[currentArea].weekly[1];
+    newData.datasets[1].data = areasStatsData[currentArea].weekly[2];
+    newData.datasets[2].data = areasStatsData[currentArea].weekly[3];
 
-    sampleDataSet.label = `Total Captures`;
-    sampleDataSet.data = areasWeekylData[currentArea][1];
-    lineChartData.datasets.push(JSON.parse(JSON.stringify(sampleDataSet))); // NOTE: JSON.parse(JSON.stringify(my_object)) creates a new object, otherwise a reference would be passed
+    newConfig.data = newData;
 
-    sampleDataSet.label = `Secure Captures`;
-    sampleDataSet.data = areasWeekylData[currentArea][2];
-    sampleDataSet.borderColor = "rgb(80, 202, 80)";
-    lineChartData.datasets.push(JSON.parse(JSON.stringify(sampleDataSet)));
-
-    sampleDataSet.label = `Vulnerable Captures`;
-    sampleDataSet.data = areasWeekylData[currentArea][3];
-    sampleDataSet.borderColor = "rgb(226, 96, 96)";
-    lineChartData.datasets.push(JSON.parse(JSON.stringify(sampleDataSet)));
-
-    lineChartConfig.data = lineChartData;
-
-    new Chart(element.getContext('2d'), lineChartConfig);
+    new Chart(element.getContext('2d'), newConfig);
 });
