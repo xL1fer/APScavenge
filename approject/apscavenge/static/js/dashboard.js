@@ -159,6 +159,7 @@ $(document).on('click', '.clickable-row', function (e) {
 });
 
 
+
 /*
 *   Dashboard stats charts render
 */
@@ -197,22 +198,25 @@ let doughnutChartConfig = {
         }
     },
 };
-const doughnutChartElements = document.querySelectorAll('.doughnut-chart');
-doughnutChartElements.forEach((element, index) => {
-    let currentArea = element.getAttribute('area');
 
-    let newData = JSON.parse(JSON.stringify(doughnutChartData));
-    let newConfig = JSON.parse(JSON.stringify(doughnutChartConfig));
+function renderDoughnutCharts() {
+    const doughnutChartElements = document.querySelectorAll('.doughnut-chart');
+    doughnutChartElements.forEach((element, index) => {
+        let currentArea = element.getAttribute('area');
 
-    newData.datasets[0].data = areasStatsData[currentArea].ratio;
+        let newData = JSON.parse(JSON.stringify(doughnutChartData));
+        let newConfig = JSON.parse(JSON.stringify(doughnutChartConfig));
 
-    let vulnerableRatio = areasStatsData[currentArea].ratio[1] / areasStatsData[currentArea].ratio.reduce((sum, curValue) => sum + curValue, 0) * 100;
+        newData.datasets[0].data = areasStatsData[currentArea].ratio;
 
-    newConfig.data = newData;
-    newConfig.options.plugins.title.text = `"${currentArea}" Area Vulnerability Ratio: ${vulnerableRatio}%`;
+        let vulnerableRatio = areasStatsData[currentArea].ratio[1] / areasStatsData[currentArea].ratio.reduce((sum, curValue) => sum + curValue, 0) * 100;
 
-    new Chart(element.getContext('2d'), newConfig);
-});
+        newConfig.data = newData;
+        newConfig.options.plugins.title.text = `"${currentArea}" Area Vulnerability Ratio: ${vulnerableRatio.toFixed(2)}%`;
+
+        new Chart(element.getContext('2d'), newConfig);
+    });
+}
 
 // Line chart setup
 let lineChartData = {
@@ -251,19 +255,54 @@ let lineChartConfig = {
 
 //new Chart(document.getElementById('test-line-chart').getContext('2d'), lineChartConfig);
 
-const lineChartElements = document.querySelectorAll('.line-chart');
-lineChartElements.forEach((element) => {
-    let currentArea = element.getAttribute('area');
+function renderLineCharts() {
+    const lineChartElements = document.querySelectorAll('.line-chart');
+    lineChartElements.forEach((element) => {
+        let currentArea = element.getAttribute('area');
 
-    let newData = JSON.parse(JSON.stringify(lineChartData));
-    let newConfig = JSON.parse(JSON.stringify(lineChartConfig));
+        let newData = JSON.parse(JSON.stringify(lineChartData));
+        let newConfig = JSON.parse(JSON.stringify(lineChartConfig));
 
-    newData.labels = areasStatsData[currentArea].weekly[0];
-    newData.datasets[0].data = areasStatsData[currentArea].weekly[1];
-    newData.datasets[1].data = areasStatsData[currentArea].weekly[2];
-    newData.datasets[2].data = areasStatsData[currentArea].weekly[3];
+        newData.labels = areasStatsData[currentArea].weekly[0];
+        newData.datasets[0].data = areasStatsData[currentArea].weekly[1];
+        newData.datasets[1].data = areasStatsData[currentArea].weekly[2];
+        newData.datasets[2].data = areasStatsData[currentArea].weekly[3];
 
-    newConfig.data = newData;
+        newConfig.data = newData;
 
-    new Chart(element.getContext('2d'), newConfig);
+        new Chart(element.getContext('2d'), newConfig);
+    });
+}
+
+renderDoughnutCharts();
+renderLineCharts();
+
+/*
+*   Dashboard stats submission form handler
+*/
+function submitStatsForm() {
+    let csrf_token = $('[name="csrfmiddlewaretoken"]').val();   // Include CSRF token in AJAX request headers
+    let formData = $('#dashboard-stats-form').serialize();  // Serialize form data
+    formData += '&ajaxStatsUpdate=' + encodeURIComponent('True');
+
+    $.ajax({
+        type: 'POST',
+        url: dashboardStatsURL,
+        data: formData,
+        headers: {
+            'X-CSRFToken': csrf_token
+        },
+        success: function (response) {
+            $('#stats-area-container').html(response);
+            renderDoughnutCharts();
+            renderLineCharts();
+        }
+    });
+}
+
+/*
+*   Event handler for <select> element
+*/
+$(document).on('change', '#dashboard-stats-form select', function () {
+    submitStatsForm();
 });

@@ -38,3 +38,6 @@ class SearchTableForm(forms.Form):
     search_field = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Search'}), required=False)
     #search_email = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Filter by email'}), required=False)
     #search_id = forms.CharField(widget=forms.TextInput(attrs={'placeholder':'Filter by id'}), required=False)
+
+class SelectStatsAreaForm(forms.Form):
+    filter_area = forms.ChoiceField()

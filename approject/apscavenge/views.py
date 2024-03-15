@@ -4,8 +4,9 @@ from django.http import HttpRequest, HttpResponse
 from django.core.paginator import Paginator # database objects paginator
 from django.contrib.auth import authenticate, login, logout # import Django built in functions
 
+from django.db.models import Q
 from .models import Seizure, InfoHistory, PasswordHash, AgentStatus#, User
-from .forms import LoginForm, PageItemsSelectForm, SelectTableForm, SearchTableForm
+from .forms import LoginForm, PageItemsSelectForm, SelectTableForm, SearchTableForm, SelectStatsAreaForm
 from .serializers import SeizureSerializer, InfoHistorySerializer, PasswordHashSerializer, AgentStatusSerializer
 
 from rest_framework.response import Response
@@ -277,6 +278,55 @@ class DashboardView(View):
         
         return render(request, 'dashboard.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
     
+def areas_stats_handler(area='_global_'):
+    areas_stats = {area : {'ratio':[], 'captures':[], 'weekly':[[], [], [], []]}}
+    #areas_stats = {area : {'ratio':[], 'captures':[], 'weekly':[[], [], [], []]} for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
+
+    for area in areas_stats:
+        # emails with at least one associated passwordhash
+        vulnerable_emails = InfoHistory.objects.filter(Q(area=area) if area != '_global_' else Q(), passwordhash__isnull=False).values_list('seizure_email__email', flat=True).distinct()
+        vulnerable_num = len(vulnerable_emails)
+
+        # emails without any associated passwordhash for the current area
+        secure_emails = [email for email in InfoHistory.objects.filter(Q(area=area) if area != '_global_' else Q(), passwordhash__isnull=True).values_list('seizure_email__email', flat=True).distinct() if email not in vulnerable_emails]
+        secure_num = len(secure_emails)
+
+        # add the results to the dictionary
+        areas_stats[area]['ratio'] = [secure_num, vulnerable_num]
+
+        infohistory_objects = InfoHistory.objects.filter(Q(area=area) if area != '_global_' else Q()).order_by('capture_time').reverse()[:10]
+        for infohistory in infohistory_objects:
+            password_hash = None
+            try:
+                password_hash = infohistory.passwordhash
+            except PasswordHash.DoesNotExist:
+                pass
+
+            time_past = (timezone.now() - infohistory.capture_time).total_seconds() / 60
+            time_descriptor = 'minute'
+            if time_past > 60:
+                time_past /= 60
+                time_descriptor = 'hour'
+            if time_past > 24:
+                time_past /= 24
+                time_descriptor = 'day'
+            areas_stats[area]['captures'].append([f"Capture {infohistory.id}", "Vulnerable" if password_hash else "Secure", f"{time_past:.2f} {time_descriptor}(s) ago"])
+        
+        cur_time = timezone.now()
+        for i in range(1, 7):
+            weeks_ago = cur_time - timedelta(weeks=i)
+            weeks_range = cur_time - timedelta(weeks=i - 1)
+            
+            info_history_secure_count = InfoHistory.objects.filter(Q(area=area) if area != '_global_' else Q(), passwordhash__isnull=True, capture_time__gte=weeks_ago, capture_time__lte=weeks_range).count()
+            info_history_vulnerable_count = InfoHistory.objects.filter(Q(area=area) if area != '_global_' else Q(), passwordhash__isnull=False, capture_time__gte=weeks_ago, capture_time__lte=weeks_range).count()
+
+            areas_stats[area]['weekly'][0].append(f"{i} week(s) ago")
+            areas_stats[area]['weekly'][1].append(info_history_secure_count + info_history_vulnerable_count)
+            areas_stats[area]['weekly'][2].append(info_history_secure_count)
+            areas_stats[area]['weekly'][3].append(info_history_vulnerable_count)
+
+    return areas_stats
+
 class DashboardStatsView(View):
     """Dashboard stats page render handler"""
 
@@ -285,59 +335,27 @@ class DashboardStatsView(View):
         if not authentication_handler(request):
             return redirect('login')
         
-        areas_stats = {area : {'ratio':[], 'captures':[], 'weekly':[[], [], [], []]} for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
+        select_stats_area_form = SelectStatsAreaForm()
 
-        for area in areas_stats:
-            # emails with at least one associated passwordhash
-            vulnerable_emails = InfoHistory.objects.filter(area=area, passwordhash__isnull=False).values_list('seizure_email__email', flat=True).distinct()
-            vulnerable_num = len(vulnerable_emails)
-
-            # emails without any associated passwordhash for the current area
-            secure_emails = [email for email in InfoHistory.objects.filter(area=area, passwordhash__isnull=True).values_list('seizure_email__email', flat=True).distinct() if email not in vulnerable_emails]
-            secure_num = len(secure_emails)
-
-            # add the results to the dictionary
-            areas_stats[area]['ratio'] = [secure_num, vulnerable_num]
-
-            infohistory_objects = InfoHistory.objects.filter(area=area).order_by('capture_time').reverse()[:10]
-            for infohistory in infohistory_objects:
-                password_hash = None
-                try:
-                    password_hash = infohistory.passwordhash
-                except PasswordHash.DoesNotExist:
-                    pass
-
-                time_past = (timezone.now() - infohistory.capture_time).total_seconds() / 60
-                time_descriptor = 'minute'
-                if time_past > 60:
-                    time_past /= 60
-                    time_descriptor = 'hour'
-                if time_past > 24:
-                    time_past /= 24
-                    time_descriptor = 'day'
-                areas_stats[area]['captures'].append([f"Capture {infohistory.id}", "Vulnerable" if password_hash else "Secure", f"{time_past:.2f} {time_descriptor}(s) ago"])
-            
-            cur_time = timezone.now()
-            for i in range(1, 7):
-                weeks_ago = cur_time - timedelta(weeks=i)
-                weeks_range = cur_time - timedelta(weeks=i - 1)
-                
-                info_history_secure_count = InfoHistory.objects.filter(area=area, passwordhash__isnull=True, capture_time__gte=weeks_ago, capture_time__lte=weeks_range).count()
-                info_history_vulnerable_count = InfoHistory.objects.filter(area=area, passwordhash__isnull=False, capture_time__gte=weeks_ago, capture_time__lte=weeks_range).count()
-
-                areas_stats[area]['weekly'][0].append(f"{i} week(s) ago")
-                areas_stats[area]['weekly'][1].append(info_history_secure_count + info_history_vulnerable_count)
-                areas_stats[area]['weekly'][2].append(info_history_secure_count)
-                areas_stats[area]['weekly'][3].append(info_history_vulnerable_count)
+        available_areas = ['_global_']
+        available_areas.extend(list(InfoHistory.objects.values_list('area', flat=True).distinct()))
  
-        return render(request, 'dashboard_stats.html', {'areas_stats': areas_stats})
+        return render(request, 'dashboard_stats.html', {'select_stats_area_form': select_stats_area_form, 'areas_stats': areas_stats_handler(), 'available_areas': available_areas})
     
     def post(self, request):
         assert isinstance(request, HttpRequest)
         if not authentication_handler(request):
             return redirect('login')
+        
+        if request.POST.get('ajaxStatsUpdate'):
+            return render(request, 'dashboard_stats_area.html', {'areas_stats': areas_stats_handler(request.POST.get('filter_area'))})
+        
+        select_stats_area_form = SelectStatsAreaForm()
 
-        return render(request, 'dashboard_stats.html')
+        available_areas = ['_global_']
+        available_areas.extend(list(InfoHistory.objects.values_list('area', flat=True).distinct()))
+
+        return render(request, 'dashboard_stats.html', {'select_stats_area_form': select_stats_area_form, 'areas_stats': areas_stats_handler(), 'available_areas': available_areas})
 
 class InfrastructureView(View):
     """Infrastructure page render handler"""

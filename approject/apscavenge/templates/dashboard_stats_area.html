@@ -1,0 +1,37 @@
+<script type="text/javascript">
+    /* Varaibles declaration for external javascript file */
+    {% if areas_stats|length != 0 %}
+    areasStatsData = {{ areas_stats|safe }};
+    {% endif %}
+</script>
+
+<div id="stats-area-container">
+    {% for area, values in areas_stats.items %}
+    <div class="mb-4 container">
+        <h2 style="color:#ef9a38">{{ area }} Area Stats</h2>
+        <div class="row">
+            <div class="col-lg-4 col-md-6 mb-3">
+                <canvas area="{{ area }}" class="doughnut-chart"></canvas>
+            </div>
+
+            <div style="min-width: 64%;" class="col-lg-4 col-md-6 mb-3">
+                <canvas area="{{ area }}" class="line-chart"></canvas>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col" style="display: inline-block;">
+                <h3>Latest Captures</h3>
+                {% for detail in values.captures %}
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="pr-2">{{ detail.0 }} - {{ detail.1 }}</span>
+                    <span class="pl-2 pr-2" style="font-size: 0.8rem; border-left: 2px solid #ef9a38;">{{ detail.2 }}</span>
+                </div>
+                {% if forloop.counter != values.captures|length %}
+                <hr style="margin: 7px 0px;"/>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>

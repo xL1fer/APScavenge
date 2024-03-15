@@ -2,6 +2,8 @@ from django.db import models
 from django.utils import timezone
 from django.db.models.fields.related import OneToOneField
 
+from django.core.exceptions import ValidationError
+
 #from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
@@ -20,6 +22,10 @@ from django.db.models.fields.related import OneToOneField
 #
 #   Basically, null defines if a value can be empty in the database and blank defines if a value can be empty in a form field
 
+def area_validator(value):
+    if '_' in value:
+        raise ValidationError('Area field must not contain underscore ("_") characters.')
+
 class Seizure(models.Model):
     email = models.CharField(primary_key=True, max_length=128, null=False, blank=False)
 
@@ -28,7 +34,7 @@ class InfoHistory(models.Model):
     user_type = models.CharField(max_length=64, blank=True)
     user_info_id = models.BigIntegerField(null=True, blank=True)
     capture_time = models.DateTimeField(auto_now_add=True) #(default=timezone.now, auto_now_add=False)
-    area = models.CharField(max_length=64, null=False, blank=False)
+    area = models.CharField(max_length=64, null=False, blank=False, validators=[area_validator])
     seizure_email = models.ForeignKey(Seizure, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
@@ -46,7 +52,7 @@ class AgentStatus(models.Model):
     id = models.BigAutoField(primary_key=True)
     ip = models.CharField(max_length=32, null=False, blank=False)
     token = models.CharField(max_length=128, blank=True)
-    area = models.CharField(max_length=64, unique=True, null=False, blank=False)
+    area = models.CharField(max_length=64, unique=True, null=False, blank=False, validators=[area_validator])
     alias_name = models.CharField(max_length=64, blank=True)
     is_online = models.BooleanField(default=True)
     is_attacking = models.BooleanField(default=False)

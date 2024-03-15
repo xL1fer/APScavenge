@@ -108,7 +108,7 @@ main {
     font-size: 15px;
 }
 
-.page-indicator form select {
+.page-indicator select {
     border: 0;
     color: #ef9a38;
     background-color: white;
@@ -116,11 +116,11 @@ main {
     text-align: center;
 }
 
-.page-indicator form select:hover {
+.page-indicator select:hover {
     text-decoration: underline;
 }
 
-.page-indicator form option {
+.page-indicator option {
     background-color: white;
     color: grey;
 }
