@@ -178,7 +178,7 @@ def public_key_encryption(data_dict):
     global public_key
     plaintext = json.dumps(data_dict).encode('utf-8')
 
-    # Encrypt payload with public key
+    # encrypt payload with public key
     ciphertext = public_key.encrypt(
         plaintext,
         padding.OAEP(
@@ -195,7 +195,7 @@ def private_key_decryption(data):
     plain_data = {}
     if 'encrypted_data' in data:
 
-        # Decrypt ciphertext with private key
+        # decrypt ciphertext with private key
         plaintext = private_key.decrypt(
             data['encrypted_data'].encode('latin-1'),
             padding.OAEP(
