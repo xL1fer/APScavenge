@@ -1,0 +1,54 @@
+{% extends "dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+
+<div class="mt-5">
+    <div class="page-indicator">
+        APScavenge <b>> 
+        <span class="underlined">Dashboard</b></span>
+        > Data
+        <form method="post" enctype="multipart/form-data" style="display: inline-block;">
+            {% csrf_token %}
+            <span> > {{ select_table_form.table_select }}</span>
+        </form>
+        <span class="sidebar-hidden" id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></span>
+    </div>
+
+    {% include "dashboard_data_table.html" %}
+</div>
+
+{% endblock %}
+
+<!--
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">First</th>
+            <th scope="col">Last</th>
+            <th scope="col">Handle</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th scope="row">1</th>
+            <td>Mark</td>
+            <td>Otto</td>
+            <td>@mdo</td>
+        </tr>
+        <tr>
+            <th scope="row">2</th>
+            <td>Jacob</td>
+            <td>Thornton</td>
+            <td>@fat</td>
+        </tr>
+        <tr>
+            <th scope="row">3</th>
+            <td>Larry</td>
+            <td>the Bird</td>
+            <td>@twitter</td>
+        </tr>
+    </tbody>
+</table>
+-->

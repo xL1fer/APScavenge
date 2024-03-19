@@ -120,7 +120,7 @@ def table_data_handler(request, model_class, select_table_form, search_table_for
             cur_page = int(page_items_select_form.cleaned_data['cur_page'])
             items_per_page = int(page_items_select_form.cleaned_data['page_items'])
 
-        # NOTE: Since the search_table_form.filter_field select has no default values, as they are only set directly in the dashboard_table.html template,
+        # NOTE: Since the search_table_form.filter_field select has no default values, as they are only set directly in the dashboard_data_table.html template,
         #       we need to set them here, otherwise the form is considered invalid for cona values that do not correspond to any default
         filter_field = request.POST.get('filter_field')
         if filter_field in table_data["fields"]:    # Ensure that the filter_field is not forged
@@ -175,6 +175,7 @@ def is_int(arg):
     return type(arg) == int or type(arg) == str and arg.isdigit()
 
 def public_key_encryption(data_dict):
+    global public_key
     plaintext = json.dumps(data_dict).encode('utf-8')
 
     # Encrypt payload with public key
@@ -190,6 +191,7 @@ def public_key_encryption(data_dict):
     return {'encrypted_data': ciphertext.decode('latin-1')}
 
 def private_key_decryption(data):
+    global private_key
     plain_data = {}
     if 'encrypted_data' in data:
 
@@ -255,7 +257,7 @@ class DashboardView(View):
         model_class = get_model_class(request, select_table_form, 'requestModel')
         table_data = table_data_handler(request, model_class, select_table_form, search_table_form, page_items_select_form)
         
-        return render(request, 'dashboard.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
+        return render(request, 'dashboard_data.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
 
     def post(self, request):
         assert isinstance(request, HttpRequest)
@@ -272,11 +274,11 @@ class DashboardView(View):
         # ajax request, return only a sub portion of the dashboard content
         if request.POST.get('ajaxTableUpdate'):
             if request.POST.get('ajaxSubTableUpdate'):
-                return render(request, 'dashboard_subtable.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
+                return render(request, 'dashboard_data_subtable.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
             
-            return render(request, 'dashboard_table.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
+            return render(request, 'dashboard_data_table.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
         
-        return render(request, 'dashboard.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
+        return render(request, 'dashboard_data.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
     
 def areas_stats_handler(area='_global_'):
     areas_stats = {area : {'ratio':[], 'captures':[], 'weekly':[[], [], [], []]}}
@@ -307,9 +309,9 @@ def areas_stats_handler(area='_global_'):
             if time_past > 60:
                 time_past /= 60
                 time_descriptor = 'hour'
-            if time_past > 24:
-                time_past /= 24
-                time_descriptor = 'day'
+                if time_past > 24:
+                    time_past /= 24
+                    time_descriptor = 'day'
             areas_stats[area]['captures'].append([f"Capture {infohistory.id}", "Vulnerable" if password_hash else "Secure", f"{time_past:.2f} {time_descriptor}(s) ago"])
         
         cur_time = timezone.now()
@@ -467,7 +469,7 @@ class InfrastructureAgentView(View):
                     pass
 
                 time_past = (timezone.now() - infohistory.capture_time).total_seconds() / 60
-                agent_seizures.setdefault(infohistory.seizure_email.email, []).append([f"Capture {infohistory.id}", "Vulnerable" if password_hash else "Secure", f"{time_past:.2f} minute(s) ago"])
+                agent_seizures.setdefault(infohistory.seizure_email.email, []).append([f"Capture {infohistory.id}", "Vulnerable" if password_hash else "Secure", time_past])
 
             agent_seizures = sorted(agent_seizures.items(), key=lambda x: min(info[2] for info in x[1]))
 

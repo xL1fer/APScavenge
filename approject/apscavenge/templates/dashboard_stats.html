@@ -1,31 +1,10 @@
-{% extends "layout-nav.html" %}
+{% extends "dashboard.html" %}
 {% load static %}
 
-{% block custom_stylesheet %}
-<link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-{% endblock %}
-
-{% block title_ext %}Dashboard - {% endblock %}
-
-{% block main_class %} class="mb-5"{% endblock %}
-
-{% block content %}
+{% block dashboard_content %}
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="{% static 'js/dashboard.js' %}" defer></script>
-<script type="text/javascript">
-    /* Varaibles declaration for external javascript file */
-    const dashboardStatsURL = '{% url "dashboard-stats" %}';
-    let areasStatsData = null;
-</script>
 
-<div class="sidebar">
-    <ul id="ul-sidebar">
-        <a href="{% url 'dashboard' %}"><li>Tables</li></a>
-        <a href="{% url 'dashboard-stats' %}"><li>Stats</li></a>
-        <a class="sidebar-hidden" id="a-sidebar-toggle"><li style="margin-top: 50%">Close</li></a>
-    </ul>
-</div>
 <div class="mt-5">
     <div class="page-indicator">
         APScavenge <b>> 

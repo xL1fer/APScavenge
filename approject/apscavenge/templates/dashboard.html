@@ -15,62 +15,19 @@
 <script type="text/javascript">
     /* Varaibles declaration for external javascript file */
     const dashboardURL = '{% url "dashboard" %}';
+    const dashboardStatsURL = '{% url "dashboard-stats" %}';
     let requestModel = '{{ table_data.current_model }}';
+    let areasStatsData = null;
 </script>
 
 <div class="sidebar">
     <ul id="ul-sidebar">
-        <a href="{% url 'dashboard' %}"><li>Tables</li></a>
+        <a href="{% url 'dashboard' %}"><li>Data</li></a>
         <a href="{% url 'dashboard-stats' %}"><li>Stats</li></a>
         <a class="sidebar-hidden" id="a-sidebar-toggle"><li style="margin-top: 50%">Close</li></a>
     </ul>
 </div>
-<div class="mt-5">
-    <div class="page-indicator">
-        APScavenge <b>> 
-        <span class="underlined">Dashboard</b></span>
-        > Tables
-        <form method="post" enctype="multipart/form-data" style="display: inline-block;">
-            {% csrf_token %}
-            <span> > {{ select_table_form.table_select }}</span>
-        </form>
-        <span class="sidebar-hidden" id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></span>
-    </div>
 
-    {% include "dashboard_table.html" %}
-
-    <!--
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">#</th>
-                <th scope="col">First</th>
-                <th scope="col">Last</th>
-                <th scope="col">Handle</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <th scope="row">1</th>
-                <td>Mark</td>
-                <td>Otto</td>
-                <td>@mdo</td>
-            </tr>
-            <tr>
-                <th scope="row">2</th>
-                <td>Jacob</td>
-                <td>Thornton</td>
-                <td>@fat</td>
-            </tr>
-            <tr>
-                <th scope="row">3</th>
-                <td>Larry</td>
-                <td>the Bird</td>
-                <td>@twitter</td>
-            </tr>
-        </tbody>
-    </table>
-    -->
-</div>
+{% block dashboard_content %}{% endblock %}
 
 {% endblock %}
