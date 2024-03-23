@@ -212,7 +212,7 @@ function renderDoughnutChart() {
         let vulnerableRatio = areasStatsData[currentArea].ratio[1] / areasStatsData[currentArea].ratio.reduce((sum, curValue) => sum + curValue, 0) * 100;
 
         newConfig.data = newData;
-        newConfig.options.plugins.title.text = `"${currentArea}" Area Vulnerability Ratio: ${vulnerableRatio.toFixed(2)}%`;
+        newConfig.options.plugins.title.text = `Vulnerability Ratio: ${vulnerableRatio.toFixed(2)}%`;
 
         new Chart(element.getContext('2d'), newConfig);
     });
@@ -250,6 +250,15 @@ let lineChartConfig = {
     options: {
         responsive: true,
         maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: null
+            }
+        }
     }
 };
 
@@ -267,6 +276,8 @@ function renderLineChart() {
         newData.datasets[0].data = areasStatsData[currentArea].weekly[1];
         newData.datasets[1].data = areasStatsData[currentArea].weekly[2];
         newData.datasets[2].data = areasStatsData[currentArea].weekly[3];
+
+        newConfig.options.plugins.title.text = `Capture Types Distribution`;
 
         newConfig.data = newData;
 
