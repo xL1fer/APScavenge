@@ -199,7 +199,7 @@ let doughnutChartConfig = {
     },
 };
 
-function renderDoughnutCharts() {
+function renderDoughnutChart() {
     const doughnutChartElements = document.querySelectorAll('.doughnut-chart');
     doughnutChartElements.forEach((element, index) => {
         let currentArea = element.getAttribute('area');
@@ -255,7 +255,7 @@ let lineChartConfig = {
 
 //new Chart(document.getElementById('test-line-chart').getContext('2d'), lineChartConfig);
 
-function renderLineCharts() {
+function renderLineChart() {
     const lineChartElements = document.querySelectorAll('.line-chart');
     lineChartElements.forEach((element) => {
         let currentArea = element.getAttribute('area');
@@ -274,8 +274,8 @@ function renderLineCharts() {
     });
 }
 
-renderDoughnutCharts();
-renderLineCharts();
+renderDoughnutChart();
+renderLineChart();
 
 /*
 *   Dashboard stats submission form handler
@@ -294,8 +294,8 @@ function submitStatsForm() {
         },
         success: function (response) {
             $('#stats-area-container').html(response);
-            renderDoughnutCharts();
-            renderLineCharts();
+            renderDoughnutChart();
+            renderLineChart();
         }
     });
 }
