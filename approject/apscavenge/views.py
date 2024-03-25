@@ -154,7 +154,8 @@ def table_data_handler(request, model_class, select_table_form, search_table_for
         #foreign_keys = [field.name for field in model_class._meta.fields if field.is_relation and field.many_to_one]
         #print(f"{table_data["relation_fields"][-1]}__{prev_model_class._meta.pk.name}: {request.POST.get('requestValue')}")
 
-        filter_params = {f"{table_data["relation_fields"][-1]}__{prev_model_class._meta.pk.name}": request.POST.get('requestValue')}
+        relation_field = table_data["relation_fields"][-1]
+        filter_params = {f"{relation_field}__{prev_model_class._meta.pk.name}": request.POST.get('requestValue')}
         objects = model_class.objects.filter(**filter_params)
         #objects = model_class.objects.filter(seizure_email__email=request.POST.get('requestValue'))
         #objects = model_class.objects.filter(info_history__id=request.POST.get('requestValue'))
