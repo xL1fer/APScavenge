@@ -2,7 +2,9 @@
 
 ## Python Virtual Environment
 
-It is recommended to use a python virtual environment when running this project. The venv can be created at the root directory ```"APScavenge/"```.
+It is recommended to use a python virtual environment when running this project in development. The venv can be created at the root directory ```"APScavenge/"```.
+
+When running in production mode, using docker is commended, for which the required files are already present in the project.
 
 ### Windows python venv
 
@@ -59,5 +61,7 @@ $ deactivate
 Once the venv is activated, the following packages are required to run the project:
 
 - pip install django
-- pip install django_rest_framework
+- pip install djangorestframework
 - pip install python-dotenv
+- pip install requests
+- pip install cryptography
