@@ -36,7 +36,7 @@ DEBUG = getenv('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
-CSRF_TRUSTED_ORIGINS = getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://0.0.0.0,').split(',')
+CSRF_TRUSTED_ORIGINS = getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://127.0.0.1,http://0.0.0.0,').split(',')
 
 
 # Application definition
@@ -131,8 +131,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_ROOT = 'static/'
-STATIC_URL = 'static/'
+STATIC_ROOT = '/static/'
+STATIC_URL = '/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
