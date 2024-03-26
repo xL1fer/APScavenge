@@ -36,12 +36,24 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 sudo docker run hello-world
 ```
 
+## 4. Adding user to docker group, removes the need of invoking docker commands with sudo
+
+```
+sudo usermod -aG docker $USER
+```
+
+#### Ubuntu references
 [https://docs.docker.com/engine/install/ubuntu/]
+
+#### Kali references
+[https://malfunction-grinds.medium.com/how-to-install-docker-and-docker-compose-on-kali-linux-2ecd69c67ee9
+[https://www.kali.org/docs/containers/installing-docker-on-kali/]
 
 # Start the containers
 
 ```
 sudo docker compose up -d
+sudo docker compose up --build -d # rebuild containers if already created
 ```
 
 # Stop the containers
