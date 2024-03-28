@@ -26,6 +26,8 @@ from datetime import datetime, timedelta
 import requests
 import json
 
+#from asgiref.sync import sync_to_async
+
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
@@ -445,6 +447,96 @@ class InfrastructureView(View):
             return render(request, 'infrastructure_grid.html', {"agentstatus_objects": agentstatus_objects})
 
         return render(request, 'infrastructure.html', {"agentstatus_objects": agentstatus_objects})
+    
+'''
+class InfrastructureView(View):
+    """Infrastructure page render handler"""
+
+    async def get(self, request):
+        assert isinstance(request, HttpRequest)
+        if not await sync_to_async(authentication_handler)(request):
+            return redirect('login')
+
+        await sync_to_async(update_active_agents)()
+        agentstatus_objects = [agentstatus async for agentstatus in AgentStatus.objects.all()]
+        
+        return render(request, 'infrastructure.html', {"agentstatus_objects": agentstatus_objects})
+
+    async def post(self, request):
+        assert isinstance(request, HttpRequest)
+        if not await sync_to_async(authentication_handler)(request):
+            return redirect('login')
+        
+        await sync_to_async(update_active_agents)()
+        agentstatus_objects = [agentstatus async for agentstatus in AgentStatus.objects.all()]
+
+        if request.POST.get('agentAction'):
+            agentAction = request.POST['agentAction'].split('-')
+            if is_int(agentAction[0]) and await sync_to_async(AgentStatus.objects.filter(id=agentAction[0]).exists)():
+                agentstatus = await sync_to_async(AgentStatus.objects.get)(id=agentAction[0])
+                # Ensure we are not already performing a request to this agent
+                if not agentstatus.is_requesting:
+                    agentstatus.is_requesting = True
+                    await sync_to_async(agentstatus.save)()
+                    
+                    if agentAction[1] == 'start':
+                        try:
+                            url = f'http://{agentstatus.ip}/start-attack-api'
+                            response = await sync_to_async(requests.post)(url, json=public_key_encryption({"id": int(agentAction[0])}))
+                            #print(f'Response: status code {response.status_code} | content {response.content}')
+
+                            if response.status_code == 200:
+                                agentstatus.is_attacking = True
+                            await sync_to_async(agentstatus.save)()
+                            agentstatus_objects = [agentstatus async for agentstatus in AgentStatus.objects.all()]
+
+                            for agent in agentstatus_objects:
+                                if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
+                                    try:
+                                        agent.message = private_key_decryption(json.loads(response.content.decode("UTF-8")))['message']
+                                        if agent.message == "Wrong agent id.":
+                                            await sync_to_async(agentstatus.delete)()
+                                    except ValueError as e:
+                                        pass
+
+                        except requests.exceptions.RequestException as e:
+                            await sync_to_async(agentstatus.delete)()
+
+                    elif agentAction[1] == 'stop':
+                        try:
+                            url = f'http://{agentstatus.ip}/stop-attack-api'
+                            response = await sync_to_async(requests.post)(url, json=public_key_encryption({"id": int(agentAction[0])}))
+                            #print(f'Response: status code {response.status_code} | content {response.content}')
+
+                            agentstatus.is_attacking = False
+                            await sync_to_async(agentstatus.save)()
+                            agentstatus_objects = [agentstatus async for agentstatus in AgentStatus.objects.all()]
+
+                            for agent in agentstatus_objects:
+                                if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
+                                    try:
+                                        agent.message = private_key_decryption(json.loads(response.content.decode("UTF-8")))['message']
+                                        if agent.message == "Wrong agent id.":
+                                            await sync_to_async(agentstatus.delete)()
+                                    except ValueError as e:
+                                        pass
+
+                        except requests.exceptions.RequestException as e:
+                            await sync_to_async(agentstatus.delete)()
+                    
+                    if await sync_to_async(AgentStatus.objects.filter(id=agentAction[0]).exists)():
+                        agentstatus.is_requesting = False
+                        await sync_to_async(agentstatus.save)()
+                else:
+                    for agent in agentstatus_objects:
+                        if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
+                            agent.message = "Pending request."
+                
+        if request.POST.get('ajaxGridUpdate'):
+            return render(request, 'infrastructure_grid.html', {"agentstatus_objects": agentstatus_objects})
+
+        return render(request, 'infrastructure.html', {"agentstatus_objects": agentstatus_objects})
+'''
 
 class InfrastructureAgentView(View):
     """Infrastructure agent page render handler"""
