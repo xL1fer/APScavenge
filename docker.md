@@ -42,11 +42,17 @@ sudo docker run hello-world
 sudo usermod -aG docker $USER
 ```
 
+## 5. Removing user from docker group
+
+```
+sudo gpasswd --delete $USER docker
+```
+
 #### Ubuntu references
 [https://docs.docker.com/engine/install/ubuntu/]
 
 #### Kali references
-[https://malfunction-grinds.medium.com/how-to-install-docker-and-docker-compose-on-kali-linux-2ecd69c67ee9
+[https://malfunction-grinds.medium.com/how-to-install-docker-and-docker-compose-on-kali-linux-2ecd69c67ee9]
 [https://www.kali.org/docs/containers/installing-docker-on-kali/]
 
 # Start the containers
