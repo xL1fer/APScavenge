@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  flask_gunicorn:
+    volumes:
+      - static:/static
+    env_file:
+      - approject/.env.local
+    build:
+      context: .
+    privileged: true
+    network_mode: host
+    expose:
+      - "8000"
+  nginx:
+    build: ./nginx
+    volumes:
+      - static:/static
+    ports:
+      - "80:80"
+    depends_on:
+      - flask_gunicorn
+
+volumes:
+  static:
