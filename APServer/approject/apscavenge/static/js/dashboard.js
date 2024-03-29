@@ -1,3 +1,4 @@
+
 /*
 *   Dashboard sidebar visibility handler
 */
