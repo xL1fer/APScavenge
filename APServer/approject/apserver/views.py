@@ -211,7 +211,7 @@ def private_key_decryption(data):
         try:
             return json.loads(plaintext)
         except ValueError as e:
-            print("(ERROR) APScavenge: Decrypted text is not a valid json format")
+            print("(ERROR) APServer: Decrypted text is not a valid json format")
     
     return plain_data
 
