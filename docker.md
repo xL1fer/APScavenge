@@ -78,20 +78,20 @@ sudo docker network ls
 
 ```
 sudo docker volume ls
-sudo docker volume inspect apscavenge_static
-sudo ls -la /var/lib/docker/volumes/apscavenge_static/_data
+sudo docker volume inspect apserver_static
+sudo ls -la /var/lib/docker/volumes/apserver_static/_data
 ```
 
 ## Another way of checking data
 
 ```
-sudo docker exec -it apscavenge-django_gunicorn-1 ls -la ../static
+sudo docker exec -it apserver_django_gunicorn_1 ls -la ../static
 ```
 
 # Remove volume
 
 ```
-sudo docker volume remove apscavenge_static
+sudo docker volume remove apserver_static
 ```
 
 # Delete images
@@ -99,7 +99,7 @@ sudo docker volume remove apscavenge_static
 ```
 sudo docker images
 sudo docker rmi [image_id]
-sudo docker rmi apscavenge-django_gunicorn;sudo docker rmi apscavenge-nginx
+sudo docker rmi apserver_django_gunicorn;sudo docker rmi apserver_nginx
 ```
 
 # Delete volumes not being used
@@ -117,19 +117,19 @@ sudo docker ps
 # Check container erros
 
 ```
-sudo docker logs [container_name] (apscavenge-django_gunicorn-1)
+sudo docker logs [container_name] (apserver_django_gunicorn_1)
 ```
 
 # Create django super user inside docker container
 
 ```
-sudo docker exec -it apscavenge-django_gunicorn-1 python manage.py createsuperuser
+sudo docker exec -it apserver_django_gunicorn_1 python manage.py createsuperuser
 ```
 
 # Shutdown and clear created container files and images
 
 ```
 sudo docker compose down
-sudo docker volume remove apscavenge_static
-sudo docker rmi apscavenge-django_gunicorn;sudo docker rmi apscavenge-nginx
+sudo docker volume remove apserver_static
+sudo docker rmi apserver_django_gunicorn;sudo docker rmi apserver_nginx
 ```

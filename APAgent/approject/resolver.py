@@ -300,7 +300,7 @@ def main():
         g_agent_area = os.getenv('AGENT_AREA', 'none')
 
         try:
-            g_agent_ip = f"{netifaces.ifaddresses(g_iface)[netifaces.AF_INET][0]['addr']}:80"
+            g_agent_ip = f"{netifaces.ifaddresses(g_iface)[netifaces.AF_INET][0]['addr']}:{os.getenv('AGENT_PORT', '80')}"
         except:
             print(f'(ERROR) APAgent: Could not get address from interface "{g_iface}"')
 
