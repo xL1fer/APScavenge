@@ -1,6 +1,14 @@
 version: '3.8'
 
 services:
+  postgresql:
+    image: postgres:latest
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: apscavengedb
   django_gunicorn:
     volumes:
       - static:/static
@@ -10,6 +18,8 @@ services:
       context: .
     ports:
       - "8000:8000"
+    depends_on:
+      - postgresql
   nginx:
     build: ./nginx
     volumes:
@@ -21,3 +31,4 @@ services:
 
 volumes:
   static:
+  pgdata:
