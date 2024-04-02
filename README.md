@@ -70,3 +70,10 @@ find . -type f -exec dos2unix {} \;
 		|
 		|	AGENT_PORT='8080'
 		|
+		
+	NOTE: ensure the agent gunicorn ip is set to an interface with network connectivity
+		
+		entrypoint.sh
+			|
+			|	gunicorn --bind 192.168.1.84:8000 resolver:app #--log-level debug
+			|
