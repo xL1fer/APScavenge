@@ -4,6 +4,7 @@ services:
   flask_gunicorn:
     volumes:
       - static:/static
+      - agentdata:/agentdata
     env_file:
       - approject/.env.local
     build:
@@ -22,4 +23,5 @@ services:
       - flask_gunicorn
 
 volumes:
-  static:
+  static:       # not really used by the agent right now as it does not provide any particular web page
+  agentdata:    # volume to hold agent json credential files

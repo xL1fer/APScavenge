@@ -342,7 +342,7 @@ def main(iface_arg, creds_arg, conf_arg, agent_area_arg, central_ip_arg, queue_a
 
         # load credentials json file
         try:
-            g_creds_file = open(BASE_DIR / g_creds_file_name, "r+")
+            g_creds_file = open(f"/agentdata/{g_creds_file_name}", "r+") #g_creds_file = open(BASE_DIR / g_creds_file_name, "r+")
             try:
                 g_creds_dict = json.load(g_creds_file)
             # JSONDecodeError error, file can either be empty or not in json format
@@ -354,7 +354,7 @@ def main(iface_arg, creds_arg, conf_arg, agent_area_arg, central_ip_arg, queue_a
             if sys.getsizeof(g_creds_dict) > 1048576:    # 1MB
                 g_creds_dict.clear()
         except FileNotFoundError:
-            g_creds_file = open(BASE_DIR / g_creds_file_name, "w")
+            g_creds_file = open(f"/agentdata/{g_creds_file_name}", "w") #g_creds_file = open(BASE_DIR / g_creds_file_name, "w")
             json.dump({}, g_creds_file, indent=4)
 
         # execute hostapd-mana
