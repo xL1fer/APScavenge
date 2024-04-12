@@ -27,8 +27,19 @@ main {
 
 /* Navbar */
 
+
 .navbar.first {
-    padding: 2px;
+    padding: 10px;
+    font-size: 0.80rem;
+}
+
+.navbar.first ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+} .navbar.first ul li {
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .navbar.first a:not(.disabled) {
@@ -78,8 +89,8 @@ main {
         font-size: 25px;
     }
 }
-@media (max-width: 250px) {
-    .navbar-nav.start-links {
+@media (max-width: 265px) {
+    .navbar ul.start-links {
         display: none;
     }
 }
@@ -89,13 +100,14 @@ main {
     }
 }
 
-.navbar.second a {
+.navbar.second a, .navbar button {
     color:white;
     cursor: pointer;
+    border: 0;
     transition: 0.3s;
 }
 
-.navbar.second a:hover {
+.navbar.second a:hover, .navbar button:hover {
     color:black;
     transition: 0.3s;
 }
@@ -145,14 +157,6 @@ main {
 .underlined:focus:after,
 .underlined:active:after {
     width: 30%;
-}
-
-@media (max-width: 345px) {
-    .login-box {
-        border: 0px;
-        width: 100%;
-        height: 100%;
-    }
 }
 
 .center {

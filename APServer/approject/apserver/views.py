@@ -717,6 +717,14 @@ class CentralHeartbeatAPI(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(public_key_encryption(serializer.data), status=status.HTTP_201_CREATED)
+        
+        """
+        else:
+            serializer = AgentStatusSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(public_key_encryption(serializer.data), status=status.HTTP_201_CREATED)
+        """
 
         return Response(public_key_encryption(serializer.errors), status=status.HTTP_400_BAD_REQUEST)
 

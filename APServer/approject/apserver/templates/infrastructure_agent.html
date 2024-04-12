@@ -44,9 +44,9 @@
                 <span class="seizure-title">{{ details.0 }}</span>
 
                 {% for detail in details.1 %}
-                <div>
-                    <span class="pl-2 pr-2">{{ detail.0 }} - {{ detail.1 }}</span>
-                    <span class="pl-2 pr-2" style="font-size: 0.8rem; border-left: 2px solid #ef9a38;">{{ detail.2|floatformat:2 }} minute(s) ago</span>
+                <div style="display: flex; justify-content: space-between;">
+                    <span class="ps-2 pe-2">{{ detail.0 }} - {{ detail.1 }}</span>
+                    <span class="ps-2 pe-2" style="font-size: 0.8rem; border-left: 2px solid #ef9a38;">{{ detail.2|floatformat:2 }} minute(s) ago</span>
                 </div>
                 {% endfor %}
             </div>

@@ -45,6 +45,11 @@
 
 .custom-grid .row > div a, .details-grid a {
     color: #ef9a38;
+    text-decoration: none;
+}
+
+.custom-grid .row > div a:hover, .details-grid a:hover {
+    text-decoration: underline;
 }
 
 .details-grid .row:first-child .col:first-child {

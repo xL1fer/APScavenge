@@ -62,6 +62,8 @@ class AgentStatus(models.Model):
 
     def save(self, *args, **kwargs):
         self.area = self.area.lower()
+        if len(self.alias_name) == 0:
+            self.alias_name = self.area
         super(AgentStatus, self).save(*args, **kwargs)
 
 #class User(AbstractUser):

@@ -101,6 +101,10 @@
 
 /* Table */
 
+table.table-custom td, table.table-custom th {
+    background-color: inherit;
+}
+
 table.table-custom {
     border-top: 3px solid #ef9a38;
 }

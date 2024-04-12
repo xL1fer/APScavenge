@@ -47,10 +47,10 @@
                 <tr>
                     <td colspan="{{ table_data.fields|length|add:1 }}">
                         Results per page:
-                        <span class="mr-4">
+                        <span class="me-4">
                             {{ page_items_select_form.page_items }}
                         </span>
-                        <span class="mr-4">{{ table_data.items_start }} to {{ table_data.items_stop }} of {{ table_data.items_count }}</span>
+                        <span class="me-4">{{ table_data.items_start }} to {{ table_data.items_stop }} of {{ table_data.items_count }}</span>
                         <input type="hidden" name="cur_page" id="form-current-page" value="{{ page_items_select_form.cur_page.value }}">
                         <input type="hidden" name="max_page" id="form-max-page" value="{{ table_data.max_page }}">
                         <span class="prevent-select">

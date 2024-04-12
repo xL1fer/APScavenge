@@ -23,8 +23,8 @@
                 <h3>Latest Captures</h3>
                 {% for detail in values.captures %}
                 <div style="display: flex; justify-content: space-between;">
-                    <span class="pr-2">{{ detail.0 }} - {{ detail.1 }}</span>
-                    <span class="pl-2 pr-2" style="font-size: 0.8rem; border-left: 2px solid #ef9a38;">{{ detail.2 }}</span>
+                    <span class="pe-2">{{ detail.0 }} - {{ detail.1 }}</span>
+                    <span class="ps-2 pe-2 my-auto py-auto" style="font-size: 0.8rem; border-left: 2px solid #ef9a38;">{{ detail.2 }}</span>
                 </div>
                 {% if forloop.counter != values.captures|length %}
                 <hr style="margin: 7px 0px;"/>
