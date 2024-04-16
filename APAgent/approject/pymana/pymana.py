@@ -75,7 +75,7 @@ def post_seizure(email, asleap=None, jtr=None, hashcat=None):
 
     except requests.exceptions.RequestException as e:
         #print(e)
-        print('(ERROR) Pymana: Could not execute central request')
+        print('(ERROR) Pymana: Could not execute central request', flush=True)
 
     post_infohistory(email, asleap, jtr, hashcat)
 
@@ -91,23 +91,23 @@ def post_infohistory(email, asleap, jtr, hashcat):
 
     except requests.exceptions.RequestException as e:
         #print(e)
-        print('(ERROR) Pymana: Could not execute central request')
+        print('(ERROR) Pymana: Could not execute central request', flush=True)
 
 def pymana_exec_cmd(cmd, cmd_msg, cmd_err):
-    print(f"Pymana: {cmd_msg}")
+    print(f"Pymana: {cmd_msg}", flush=True)
 
     try:
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True)
         
         # wait process to complete and capture output
         output, error = process.communicate()
-        print(output)
+        print(output, flush=True)
 
         # print any error
         if error:
-            print(error)
+            print(error, flush=True)
     except Exception as e:
-        print(f"(ERROR) Pymana {cmd_err}: {e}")
+        print(f"(ERROR) Pymana {cmd_err}: {e}", flush=True)
 
 def write_queue(msg):
     global g_queue
@@ -115,17 +115,17 @@ def write_queue(msg):
     if g_queue is not None:
         g_queue.put(msg)
     else:
-        print(f"(ERROR) Pymana multiprocess: Invalid queue")
+        print(f"(ERROR) Pymana multiprocess: Invalid queue", flush=True)
 
 def pymana_main(cmd):
     global g_iface, g_creds_file, g_creds_dict
 
     try:
         # print command being executed
-        print("=========================================================")
-        print("Pymana v0.3")
-        print(f"\nExecuting command:\n\"{cmd}\"")
-        print("=========================================================\n")
+        print("=========================================================", flush=True)
+        print("Pymana v0.3", flush=True)
+        print(f"\nExecuting command:\n\"{cmd}\"", flush=True)
+        print("=========================================================\n", flush=True)
 
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, universal_newlines=True, cwd=BASE_DIR)
 
@@ -154,7 +154,7 @@ def pymana_main(cmd):
                 
                 #if (len(output_arr) < 8 and output_arr[0] != "wlan0:") or (len(output_arr) > 7 and output_arr[6] != "ACL:"):
                 if output_arr[0] != f"{g_iface}:" and ("ACL:" not in output) and ("handle_auth_cb:" not in output) and ("not allowed to authenticate" not in output):   # do not print unwanted lines
-                    print(output.strip())
+                    print(output.strip(), flush=True)
 
             # register usernames
             if output_arr[0] == "MANA" and output_arr[3] == "Phase" and output_arr[4] == "0:":
@@ -198,7 +198,7 @@ def pymana_main(cmd):
                     if os.stat(BASE_DIR / "hostapd.deny").st_size == 0 or mmap.mmap(deny_file.fileno(), 0, access=mmap.ACCESS_READ).find(output_arr[2].encode('utf-8')) == -1:
                         deny_file.write(f"{output_arr[2]}\n")
 
-                        print(f"Pymana: Added {output_arr[2]} MAC address to deny list")
+                        print(f"Pymana: Added {output_arr[2]} MAC address to deny list", flush=True)
                         
                 # reload hostapd-mana deny_mac_file
                 #pymana_exec_cmd("sudo ./hostapd-mana/hostapd/hostapd_cli set deny_mac_file hostapd.deny", "Reloading \"deny_mac_file\"...", "reload")
@@ -225,17 +225,17 @@ def pymana_main(cmd):
 
         # get the return code of the command
         return_code = process.returncode
-        print(f"Command completed with return code: {return_code}")
+        print(f"Command completed with return code: {return_code}", flush=True)
         write_queue('Pymana error')
 
     except KeyboardInterrupt:
-        print("\nKeyboardInterrupt: Ending script")
+        print("\nKeyboardInterrupt: Ending script", flush=True)
         process.terminate()
         process.wait()
 
         write_queue('Pymana stopped')
         
-        print("Pymana: Terminated")
+        print("Pymana: Terminated", flush=True)
         return
     
 def edit_config_file():
@@ -265,7 +265,7 @@ def edit_config_file():
                     config_file.truncate()  # truncate any remaining content
 
     except FileNotFoundError:
-        print(f"(ERROR) Pymana: Config file '{g_config_file_name}' not found")
+        print(f"(ERROR) Pymana: Config file '{g_config_file_name}' not found", flush=True)
         return False
     
     return True
@@ -273,7 +273,7 @@ def edit_config_file():
 def parse_arguments():
     global g_iface, g_creds_file_name, g_config_file_name, g_area, g_central_ip
 
-    print("Pymana: Parsing arguments...\n")
+    print("Pymana: Parsing arguments...\n", flush=True)
 
     cur_arg = ''
     for a in sys.argv:
@@ -286,26 +286,26 @@ def parse_arguments():
             #print(f"Reading attribute '{a}' for argument '{cur_arg}'")
             if cur_arg == 'iface':
                 g_iface = a
-                print(f"\tiface = {a}")
+                print(f"\tiface = {a}", flush=True)
             elif cur_arg == 'creds':
                 g_creds_file_name += f"-{a}"
-                print(f"\tcreds = {a}")
+                print(f"\tcreds = {a}", flush=True)
             elif cur_arg == 'conf':
                 g_config_file_name = a
-                print(f"\tconf = {a}")
+                print(f"\tconf = {a}", flush=True)
             elif cur_arg == 'area':
                 g_area = a
-                print(f"\tarea = {a}")
+                print(f"\tarea = {a}", flush=True)
             elif cur_arg == 'centralip':
                 g_central_ip = a
-                print(f"\tcentralip = {a}")
+                print(f"\tcentralip = {a}", flush=True)
             #elif cur_arg == 'queueid':
                 #queue = Queue(int(a))
                 #print(f"\tqueueid = {a}")
 
             cur_arg = ''
 
-    print()
+    print(flush=True)
 
 def rand_hex():
     if random.randint(0, 1):

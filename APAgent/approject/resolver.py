@@ -88,13 +88,13 @@ def exec_cmd(cmd):
         # wait process to complete and capture output
         output, error = process.communicate()
         if output:
-            print(output)
+            print(output, flush=True)
 
         # print any error
         if error:
-            print(error)
+            print(error, flush=True)
     except Exception as e:
-        print(f"(ERROR) APAgent: Could not execute command")
+        print(f"(ERROR) APAgent: Could not execute command", flush=True)
 
 def stop_process(process_name):
     #if process is not None and process.is_alive():
@@ -106,10 +106,10 @@ def stop_process(process_name):
     for proc in psutil.process_iter(['pid', 'name']):
         if proc.info['name'] == process_name:
             proc.kill()
-            print(f"(INFO) APAgent: Process '{process_name}' killed")
+            print(f"(INFO) APAgent: Process '{process_name}' killed", flush=True)
             return
         
-    print(f"(INFO) APAgent: Process '{process_name}' not running")
+    print(f"(INFO) APAgent: Process '{process_name}' not running", flush=True)
 
 def before_exit():
     global g_is_attacking, g_attack_process
@@ -159,7 +159,7 @@ def private_key_decryption(data):
         try:
             return json.loads(plaintext)
         except ValueError as e:
-            print("(ERROR) APAgent: Decrypted text is not a valid json format")
+            print("(ERROR) APAgent: Decrypted text is not a valid json format", flush=True)
     
     return plain_data
 
@@ -190,14 +190,14 @@ def heartbeat_central():
                 g_agent_id = plain_data['id']
                 #print(f"New agent_id: {g_agent_id}")
             elif 'last_heartbeat' not in plain_data:
-                print('(ERROR) APAgent: Bad heartbeat response')
+                print('(ERROR) APAgent: Bad heartbeat response', flush=True)
         except ValueError as e:
             #print(e)
-            print("(ERROR) APAgent: Response is not a valid json format")
+            print("(ERROR) APAgent: Response is not a valid json format", flush=True)
 
     except requests.exceptions.RequestException as e:
         #print(e)
-        print('(ERROR) APAgent: Could not execute heartbeat central request')
+        print('(ERROR) APAgent: Could not execute heartbeat central request', flush=True)
 
         # stop attacking
         if g_is_attacking:
@@ -302,7 +302,7 @@ def main():
         try:
             g_agent_ip = f"{netifaces.ifaddresses(g_iface)[netifaces.AF_INET][0]['addr']}:{os.getenv('AGENT_PORT', '80')}"
         except:
-            print(f'(ERROR) APAgent: Could not get address from interface "{g_iface}"')
+            print(f'(ERROR) APAgent: Could not get address from interface "{g_iface}"', flush=True)
 
         heartbeat_central() # Perform the first heartbeat
 
