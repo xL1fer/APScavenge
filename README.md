@@ -68,10 +68,10 @@ find . -type f -exec dos2unix {} \;
 	
 	approject/.env.local
 		|
-		|	AGENT_PORT='8080'
+		|	AGENT_IP='192.168.1.84:8080'
 		|
 	
-	NOTE: ensure the agent gunicorn ip is set to an interface with network connectivity
+	NOTE: ensure the agent ip is set to an interface with network connectivity
 		
 		entrypoint.sh
 			|
