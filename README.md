@@ -65,15 +65,22 @@ find . -type f -exec dos2unix {} \;
 		|	server {
 		|		listen 8080;
 		|
-		
+	
 	approject/.env.local
 		|
 		|	AGENT_PORT='8080'
 		|
-		
+	
 	NOTE: ensure the agent gunicorn ip is set to an interface with network connectivity
 		
 		entrypoint.sh
 			|
 			|	gunicorn --bind 192.168.1.84:8000 resolver:app #--log-level debug
+			|
+		
+		nginx/default.conf
+			|
+			|	upstream flask {
+			|		server 192.168.1.84:8000;
+			|	}
 			|
