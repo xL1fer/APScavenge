@@ -201,7 +201,7 @@ def pymana_main(cmd):
                         print(f"Pymana: Added {output_arr[2]} MAC address to deny list")
                         
                 # reload hostapd-mana deny_mac_file
-                #pymana_exec_cmd("sudo ./hostapd-mana-core/hostapd/hostapd_cli set deny_mac_file hostapd.deny", "Reloading \"deny_mac_file\"...", "reload")
+                #pymana_exec_cmd("sudo ./hostapd-mana/hostapd/hostapd_cli set deny_mac_file hostapd.deny", "Reloading \"deny_mac_file\"...", "reload")
                 pymana_exec_cmd("kill -1 $(pidof hostapd)", "Reloading configs...", "reload")
 
             """
@@ -313,15 +313,21 @@ def rand_hex():
     
     return str(random.randint(0, 9))
 
-def main(iface_arg, creds_arg, conf_arg, agent_area_arg, central_ip_arg, queue_arg):
+def main(iface_arg=None, creds_arg=None, conf_arg=None, agent_area_arg=None, central_ip_arg=None, queue_arg=None):
     global g_iface, g_creds_file_name, g_config_file_name, g_area, g_central_ip, g_queue, g_creds_file, g_creds_dict
 
-    g_iface = iface_arg
-    g_creds_file_name += f"-{creds_arg}"
-    g_config_file_name = conf_arg
-    g_area = agent_area_arg
-    g_central_ip = central_ip_arg
-    g_queue = queue_arg
+    if iface_arg != None:
+        g_iface = iface_arg
+    if creds_arg != None:
+        g_creds_file_name += f"-{creds_arg}"
+    if conf_arg != None:
+        g_config_file_name = conf_arg
+    if agent_area_arg != None:
+        g_area = agent_area_arg
+    if central_ip_arg != None:
+        g_central_ip = central_ip_arg
+    if queue_arg != None:
+        g_queue = queue_arg
 
     parse_arguments()
 
