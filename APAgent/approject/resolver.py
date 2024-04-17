@@ -65,7 +65,8 @@ app = Flask(__name__,
             static_folder='apagent/static',         #BASE_DIR / 'approject' / 'apagent' / 'static',
             template_folder='apagent/templates')    #BASE_DIR / 'approject' / 'apagent' / 'templates')
 
-g_iface = 'eth0'
+g_com_iface = 'eth0'
+g_ap_iface = 'wlan0'
 g_central_ip = '127.0.0.1:80' # NOTE: placeholder ip, is replaced later on
 g_agent_id = '-1'
 g_agent_ip = '127.0.0.1:80'   # NOTE: placeholder ip, is replaced later on
@@ -215,7 +216,7 @@ def agent_heartbeat():
 
 @app.post('/start-attack-api')
 def start_attack():
-    global g_central_ip, g_agent_id, g_agent_area, g_is_attacking, g_attack_process, g_queue
+    global g_ap_iface, g_central_ip, g_agent_id, g_agent_area, g_is_attacking, g_attack_process, g_queue
 
     content = request.get_json()
     plain_data = private_key_decryption(content)
@@ -225,13 +226,13 @@ def start_attack():
     if g_is_attacking:
         return jsonify(public_key_encryption({'message': 'Already attacking.'})), 400
     
-    #attack_process = subprocess.Popen(['python', 'pymana.py'] + ['--iface', 'wlan0', '--creds', agent_area, '--area', agent_area, '--centralip', central_ip, '--queueid', str(id(queue))], cwd=BASE_DIR / "pymana")
+    #attack_process = subprocess.Popen(['python', 'pymana.py'] + ['--iface', g_ap_iface, '--creds', agent_area, '--area', agent_area, '--centralip', central_ip, '--queueid', str(id(queue))], cwd=BASE_DIR / "pymana")
 
     # clear queue
     while not g_queue.empty():
         g_queue.get()
 
-    g_attack_process = Process(target=pymana.main, args=("wlan0", g_agent_area, "eduroam", g_agent_area, g_central_ip, g_queue,))
+    g_attack_process = Process(target=pymana.main, args=(g_ap_iface, g_agent_area, "eduroam", g_agent_area, g_central_ip, g_queue,))
     g_attack_process.start()
 
     message = g_queue.get()
@@ -286,7 +287,7 @@ def clear_deny_list():
 #####################################
 
 def main():
-    global g_iface, g_central_ip, g_agent_ip, g_agent_area
+    global g_com_iface, g_ap_iface, g_central_ip, g_agent_ip, g_agent_area
 
     # prevent schedule functions from executing twice (one by the master and another child process)
     if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
@@ -295,15 +296,16 @@ def main():
         dotenv_file = BASE_DIR / '.env.local'
         if os.path.isfile(dotenv_file):
             dotenv.load_dotenv(dotenv_file)
-        g_iface = os.getenv('COM_IFACE', 'eth0')
+        g_com_iface = os.getenv('COM_IFACE', 'eth0')
+        g_ap_iface = os.getenv('AP_IFACE', 'wlan0')
         g_central_ip = os.getenv('CENTRAL_IP', '127.0.0.1:80')
         g_agent_area = os.getenv('AGENT_AREA', 'none')
 
         try:
-            #g_agent_ip = f"{netifaces.ifaddresses(g_iface)[netifaces.AF_INET][0]['addr']}:{os.getenv('AGENT_PORT', '80')}"
+            #g_agent_ip = f"{netifaces.ifaddresses(g_com_iface)[netifaces.AF_INET][0]['addr']}:{os.getenv('AGENT_PORT', '80')}"
             g_agent_ip = f"{os.getenv('AGENT_IP', '127.0.0.1:80')}"
         except:
-            print(f'(ERROR) APAgent: Could not get address from interface "{g_iface}"', flush=True)
+            print(f'(ERROR) APAgent: Could not get address from interface "{g_com_iface}"', flush=True)
 
         heartbeat_central() # Perform the first heartbeat
 
