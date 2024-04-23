@@ -284,8 +284,8 @@ class DashboardView(View):
         return render(request, 'dashboard_data.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
     
 def areas_stats_handler(area='_global_'):
-    areas_stats = {area : {'ratio':[], 'captures':[], 'weekly':[[], [], [], []]}}
-    #areas_stats = {area : {'ratio':[], 'captures':[], 'weekly':[[], [], [], []]} for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
+    areas_stats = {area : {'ratio':[], 'captures':[], 'timely':[[], [], [], []]}}
+    #areas_stats = {area : {'ratio':[], 'captures':[], 'timely':[[], [], [], []]} for area in InfoHistory.objects.values_list('area', flat=True).distinct()}
 
     for area in areas_stats:
         # emails with at least one associated passwordhash
@@ -319,16 +319,16 @@ def areas_stats_handler(area='_global_'):
         
         cur_time = timezone.now()
         for i in range(1, 7):
-            weeks_ago = cur_time - timedelta(weeks=i)
-            weeks_range = cur_time - timedelta(weeks=i - 1)
+            time_ago = cur_time - timedelta(days=i)
+            time_range = cur_time - timedelta(days=i - 1)
             
-            info_history_secure_count = InfoHistory.objects.filter(Q(area=area) if area != '_global_' else Q(), passwordhash__isnull=True, capture_time__gte=weeks_ago, capture_time__lte=weeks_range).count()
-            info_history_vulnerable_count = InfoHistory.objects.filter(Q(area=area) if area != '_global_' else Q(), passwordhash__isnull=False, capture_time__gte=weeks_ago, capture_time__lte=weeks_range).count()
+            info_history_secure_count = InfoHistory.objects.filter(Q(area=area) if area != '_global_' else Q(), passwordhash__isnull=True, capture_time__gte=time_ago, capture_time__lte=time_range).count()
+            info_history_vulnerable_count = InfoHistory.objects.filter(Q(area=area) if area != '_global_' else Q(), passwordhash__isnull=False, capture_time__gte=time_ago, capture_time__lte=time_range).count()
 
-            areas_stats[area]['weekly'][0].append(f"{i} week(s) ago")
-            areas_stats[area]['weekly'][1].append(info_history_secure_count + info_history_vulnerable_count)
-            areas_stats[area]['weekly'][2].append(info_history_secure_count)
-            areas_stats[area]['weekly'][3].append(info_history_vulnerable_count)
+            areas_stats[area]['timely'][0].append(f"{i} day(s) ago")
+            areas_stats[area]['timely'][1].append(info_history_secure_count + info_history_vulnerable_count)
+            areas_stats[area]['timely'][2].append(info_history_secure_count)
+            areas_stats[area]['timely'][3].append(info_history_vulnerable_count)
 
     return areas_stats
 

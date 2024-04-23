@@ -10,11 +10,11 @@
     <div class="mb-4 container">
         <h2 style="color:#ef9a38">{{ area }} Area Stats</h2>
         <div class="row">
-            <div class="col-lg-4 col-md-6 mb-3">
+            <div style="min-height: 300px;" class="col-lg-4 col-md-6 mb-3">
                 <canvas area="{{ area }}" class="doughnut-chart"></canvas>
             </div>
 
-            <div style="min-width: 64%;" class="col-lg-4 col-md-6 mb-3">
+            <div style="min-width: 64%; min-height: 300px;" class="col-lg-4 col-md-6 mb-3">
                 <canvas area="{{ area }}" class="line-chart"></canvas>
             </div>
         </div>

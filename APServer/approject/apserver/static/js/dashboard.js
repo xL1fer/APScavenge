@@ -273,10 +273,10 @@ function renderLineChart() {
         let newData = JSON.parse(JSON.stringify(lineChartData));
         let newConfig = JSON.parse(JSON.stringify(lineChartConfig));
 
-        newData.labels = areasStatsData[currentArea].weekly[0];
-        newData.datasets[0].data = areasStatsData[currentArea].weekly[1];
-        newData.datasets[1].data = areasStatsData[currentArea].weekly[2];
-        newData.datasets[2].data = areasStatsData[currentArea].weekly[3];
+        newData.labels = areasStatsData[currentArea].timely[0];
+        newData.datasets[0].data = areasStatsData[currentArea].timely[1];
+        newData.datasets[1].data = areasStatsData[currentArea].timely[2];
+        newData.datasets[2].data = areasStatsData[currentArea].timely[3];
 
         newConfig.options.plugins.title.text = `Capture Types Distribution`;
 
