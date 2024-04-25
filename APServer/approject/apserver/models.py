@@ -56,7 +56,8 @@ class AgentStatus(models.Model):
     alias_name = models.CharField(max_length=64, blank=True)
     is_online = models.BooleanField(default=True)
     is_attacking = models.BooleanField(default=False)
-    is_requesting = models.BooleanField(default=False)
+    #is_requesting = models.BooleanField(default=False)
+    pending_request = models.SmallIntegerField(default=0)
     #heartbeat_fails = models.SmallIntegerField(default=0)
     last_heartbeat = models.DateTimeField(auto_now_add=True)
 

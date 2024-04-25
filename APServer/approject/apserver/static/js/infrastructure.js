@@ -26,10 +26,13 @@ function submitGridForm(agentAction) {
 *   Event handler for grid form submission
 */
 $(document).on('click', '#infrastructure-grid-form button', function (e) {
-    $(this).prop('disabled', true);
-    $(this).addClass('action-disabled');
     e.preventDefault();
-    submitGridForm($(this).attr('id'));
+    
+    //if (!$(this).hasClass('action-disabled')) {
+        $(this).prop('disabled', true);
+        $(this).addClass('action-disabled');
+        submitGridForm($(this).attr('id'));
+    //}
 });
 
 

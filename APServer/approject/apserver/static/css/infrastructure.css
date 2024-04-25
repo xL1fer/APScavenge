@@ -36,11 +36,15 @@
     border: 1px solid #ef9a38;
 }
 
-.custom-grid .row > div button.action-disabled, .custom-grid .row > div button.action-disabled:hover {
-    cursor: default;
+.custom-grid .row > div button.action-disabled {
+    /*cursor: default;*/
     color: grey;
     background-color: rgb(230, 230, 230);
     border: 1px solid grey;
+} .custom-grid .row > div button.action-disabled:hover {
+    color: black;
+    background-color: rgb(230, 230, 230);
+    border: 1px solid black;
 }
 
 .custom-grid .row > div a, .details-grid a {

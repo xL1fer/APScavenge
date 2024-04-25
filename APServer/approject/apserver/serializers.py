@@ -34,7 +34,8 @@ class PasswordHashSerializer(serializers.ModelSerializer):
 class AgentStatusSerializer(serializers.ModelSerializer):
     class Meta:
         model = AgentStatus
-        fields = ['id', 'ip', 'token', 'area', 'alias_name', 'is_online', 'is_attacking', 'is_requesting', 'last_heartbeat']
+        #fields = ['id', 'ip', 'token', 'area', 'alias_name', 'is_online', 'is_attacking', 'is_requesting', 'last_heartbeat']
+        fields = ['id', 'ip', 'token', 'area', 'alias_name', 'is_online', 'is_attacking', 'pending_request', 'last_heartbeat']
         
     def to_internal_value(self, data):
         try:

@@ -15,10 +15,14 @@
                 <div><b>Last update: </b>{{ agentstatus.last_heartbeat }}</div>
 
                 <div class="mt-4 mb-4">
-                    {% if not agentstatus.is_attacking %}
-                    <button id="{{ agentstatus.id }}-start" value="start-attack">Start attack</button><!--<button type="submit" form="infrastructure-grid-form" value="start-attack">Start attack</button>-->
+                    {% if agentstatus.pending_request|bitwise_and:1 or agentstatus.pending_request|bitwise_and:2 or agentstatus.pending_request|bitwise_and:8 %}
+                    <button id="{{ agentstatus.id }}-reload" class="action-disabled" value="reload">Reload</button>
                     {% else %}
-                    <button id="{{ agentstatus.id }}-stop" value="stop-attack">Stop attack</button><!--<button type="submit" form="infrastructure-grid-form" value="stop-attack">Stop attack</button>-->
+                        {% if not agentstatus.is_attacking %}
+                        <button id="{{ agentstatus.id }}-start" value="start-attack">Start attack</button><!--<button type="submit" form="infrastructure-grid-form" value="start-attack">Start attack</button>-->
+                        {% else %}
+                        <button id="{{ agentstatus.id }}-stop" value="stop-attack">Stop attack</button><!--<button type="submit" form="infrastructure-grid-form" value="stop-attack">Stop attack</button>-->
+                        {% endif %}
                     {% endif %}
                 </div>
                 <div><a href="{% url 'infrastructure-agent' area=agentstatus.area %}">Details</a></div>

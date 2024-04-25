@@ -53,6 +53,11 @@ with open("keys/apscavenge.key", 'rb') as key_file:
         backend=default_backend()
     )
 
+g_action_start = 1 << 0
+g_action_stop = 1 << 1
+g_action_clear = 1 << 2
+g_action_await = 1 << 3
+
 #####################################
 # Custom Django Template Filters    #
 #####################################
@@ -64,6 +69,10 @@ def get_value(dictionary, key):
 @register.filter
 def mult(value1, value2):
     return value1 * value2
+
+@register.filter
+def bitwise_and(value1, value2):
+    return value1 & value2
 
 #####################################
 # Helper Functions                  #
@@ -387,6 +396,19 @@ class InfrastructureView(View):
             agentAction = request.POST['agentAction'].split('-')
             if is_int(agentAction[0]) and AgentStatus.objects.filter(id=agentAction[0]).exists():
                 agentstatus = AgentStatus.objects.get(id=agentAction[0])
+
+                if agentstatus.pending_request & g_action_start or agentstatus.pending_request & g_action_stop or agentstatus.pending_request & g_action_await:
+                    for agent in agentstatus_objects:
+                        if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
+                            agent.message = "Pending request."
+
+                if agentAction[1] == 'start':
+                    agentstatus.pending_request |= g_action_start
+                elif agentAction[1] == 'stop':
+                    agentstatus.pending_request |= g_action_stop
+                agentstatus.save()
+
+                """
                 # Ensure we are not already performing a request to this agent
                 if not agentstatus.is_requesting:
                     agentstatus.is_requesting = True
@@ -442,6 +464,7 @@ class InfrastructureView(View):
                     for agent in agentstatus_objects:
                         if is_int(agentAction[0]) and int(agentAction[0]) == agent.id:
                             agent.message = "Pending request."
+                """
                 
         if request.POST.get('ajaxGridUpdate'):
             return render(request, 'infrastructure_grid.html', {"agentstatus_objects": agentstatus_objects})
@@ -587,6 +610,9 @@ class InfrastructureAgentView(View):
                 return HttpResponse(status=200)
             elif request.POST.get("ajaxAgentOption"):
                 if request.POST['ajaxAgentOption'] == 'clear-deny-list':
+                    agentstatus.pending_request |= g_action_clear
+                    agentstatus.save()
+                    """
                     try:
                         url = f'http://{agentstatus.ip}/clear-deny-list-api'
                         response = requests.post(url, json=public_key_encryption({"id": int(agentstatus.id)}))
@@ -599,6 +625,7 @@ class InfrastructureAgentView(View):
                     except requests.exceptions.RequestException as e:
                         agentstatus.delete()
                         return HttpResponse(status=400)
+                    """
                 return HttpResponse(status=200)
 
             infohistory_objects = InfoHistory.objects.filter(area=area, capture_time__gte=timezone.now() - timezone.timedelta(minutes=15))
@@ -707,9 +734,14 @@ class CentralHeartbeatAPI(APIView):
                 agentstatus.last_heartbeat = timezone.now()
                 if 'is_attacking' in plain_data:
                     agentstatus.is_attacking = True if plain_data['is_attacking'] == True else False
+                pending_request = agentstatus.pending_request
+                if agentstatus.pending_request & 1 or agentstatus.pending_request & 2:
+                    agentstatus.pending_request = 0 | g_action_await
+                else:
+                    agentstatus.pending_request = 0
                 agentstatus.save()
 
-                return Response(public_key_encryption({"last_heartbeat": str(agentstatus.last_heartbeat)}), status=status.HTTP_200_OK)
+                return Response(public_key_encryption({"last_heartbeat": str(agentstatus.last_heartbeat), "pending_request": pending_request}), status=status.HTTP_200_OK)
             else:
                 return Response(public_key_encryption({"message": "Wrong area agent id."}), status=status.HTTP_400_BAD_REQUEST)
 
