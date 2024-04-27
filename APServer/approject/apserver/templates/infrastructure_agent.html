@@ -20,14 +20,14 @@
 
 <div class="page-indicator">APScavenge <b>> <span class="underlined mb-5">Infrastructure</b></span> > {{ agentstatus.area }} Area Agent</div>
 
-<div class="container details-grid">
-    <div class="row">
-        <div class="col">
+<div class="container-fluid details-grid" style="padding: 0 2px;">
+    <div class="row" style="padding-right: 20px;">
+        <div class="col col-lg-2 col-md-12 col-12">
             <div style="background-color: black; color: white; padding: 20px 10px 5px 10px;"><h4>options</h4></div>
             <div style="padding: 20px 10px 5px 10px;"><button id="clear-deny-list">clear deny list</button></div>
             <!--<div style="padding: 20px 10px 5px 10px;"><button>sample option</button></div>-->
         </div>
-        <div class="col">
+        <div class="col col-lg-6 col-md-12 col-12">
             <h3>
                 &lt;
                 <form method="post" id="alias-name-form" enctype="multipart/form-data" style="display: inline-block;">
@@ -50,14 +50,13 @@
                 </div>
                 {% endfor %}
             </div>
-            <hr/>
             {% endfor %}
 
             {% if agent_seizures|length == 0 %}
             <div class="seizure-title">No recent captures</div>
             {% endif %}
         </div>
-        <div class="col">
+        <div class="col col-lg-2 col-md-12 col-12">
             <div>{% if agentstatus.is_online %}<b style="color: rgb(80, 202, 80)">Online</b>{% else %}<b style="color: rgb(226, 96, 96)">Offline</b>{% endif %}</div>
             <hr>
             <div><b>ID:<br/></b>{{ agentstatus.id }}</div>

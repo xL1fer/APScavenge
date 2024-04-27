@@ -318,3 +318,65 @@ function submitStatsForm() {
 $(document).on('change', '#dashboard-stats-form select', function () {
     submitStatsForm();
 });
+
+
+
+/*
+*   Dashboard users grid submission form handler
+*/
+function submitUsersGridForm(customData) {
+    let csrf_token = $('[name="csrfmiddlewaretoken"]').val();   // Include CSRF token in AJAX request headers
+    let formData = $('#dashboard-users-grid-form').serialize();  // Serialize form data
+    formData += customData;
+
+    $.ajax({
+        type: 'POST',
+        url: dashboardUsersURL,
+        data: formData,
+        headers: {
+            'X-CSRFToken': csrf_token
+        },
+        success: function (response) {
+            $('#dashboard-users-grid-form').html(response);
+        }
+    });
+}
+
+/*
+*   Event handler for user grid <a> elements
+*/
+$(document).on('click', '#dashboard-users-grid-form .prevent-select a', function (e) {
+    e.preventDefault();
+    submitUsersGridForm('&ajaxPaginatorUpdate=' + encodeURIComponent('True'));
+});
+
+/*
+*   Event handler for <select> element
+*/
+$(document).on('change', '#dashboard-users-grid-form select', function () {
+    submitUsersGridForm('&ajaxPaginatorUpdate=' + encodeURIComponent('True'));
+});
+
+/*
+*   Event handler for form submission
+*/
+$(document).on('submit', '#dashboard-users-grid-form', function (e) {
+    e.preventDefault();
+    submitUsersGridForm('&ajaxPaginatorUpdate=' + encodeURIComponent('True'));
+});
+
+/*
+*   Event handler for user grid <button> form submission
+*/
+$(document).on('click', '#dashboard-users-grid-form button', function (e) {
+    e.preventDefault();
+    
+    if (!$(this).hasClass('action-disabled')) {
+        $(this).prop('disabled', true);
+        $(this).addClass('action-disabled');
+
+        let customData = '&ajaxGridUpdate=' + encodeURIComponent('True');
+        customData += '&userEmail=' + encodeURIComponent($(this).attr('id'));
+        submitUsersGridForm(customData);
+    }
+});

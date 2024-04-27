@@ -12,12 +12,14 @@ class CentralHeartbeatSerializer(serializers.Serializer):
 class SeizureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seizure
-        fields = ['email']
+        #fields = ['email']
+        fields = ['email', 'user_data']
 
 class InfoHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = InfoHistory
-        fields = ['id', 'user_type', 'user_info_id', 'capture_time', 'area', 'seizure_email']
+        #fields = ['id', 'user_type', 'user_info_id', 'capture_time', 'area', 'seizure_email']
+        fields = ['id', 'capture_time', 'area', 'seizure_email']
 
     def to_internal_value(self, data):
         try:

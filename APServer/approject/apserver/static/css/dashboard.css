@@ -175,3 +175,80 @@ table.table-custom td a.a-disabled {
     padding: 7px;
     margin: 7px;
 }
+
+.stats-grid .row div {
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 2px 4px;
+    padding: 14px 20px 20px;
+    border-radius: 0;
+}
+
+/* Grid */
+
+.custom-grid .row > div {
+    min-height: 125px;
+    height: 100%;
+    width: 100%;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 2px 4px;
+    padding: 14px 20px 20px;
+    border: 1px solid grey;
+    margin: 10px;
+    border-radius: 0;
+}
+
+.custom-grid .row > div .title {
+    color: #ef9a38;
+    font-weight: bold;
+    font-size: 1.125rem;
+}
+
+.custom-grid .row > div button {
+    all: unset;
+    color: black;
+    background-color: white;
+    border: 1px solid black;
+    padding: 6px;
+}
+
+.custom-grid .row > div button:hover {
+    cursor: pointer;
+    color: white;
+    background-color: #ef9a38;
+    border: 1px solid #ef9a38;
+}
+
+.custom-grid .row > div button.action-disabled {
+    /*cursor: default;*/
+    color: grey;
+    background-color: rgb(230, 230, 230);
+    border: 1px solid grey;
+} .custom-grid .row > div button.action-disabled:hover {
+    cursor: default;
+}
+
+.custom-grid .row > div a {
+    color: #ef9a38;
+    text-decoration: none;
+}
+
+.custom-grid .row > div a:hover {
+    text-decoration: underline;
+}
+
+.custom-paginator a {
+    padding: 10px;
+}
+
+.custom-paginator a:hover {
+    background-color: #e4e4e4;
+    cursor: pointer;
+} .custom-paginator a:hover svg {
+    fill: #ef9a38;
+    background-color: #e4e4e4;
+}
+
+.custom-paginator a.a-disabled {
+    pointer-events: none;
+    cursor: default;
+} .custom-paginator a.a-disabled svg {
+    fill: rgb(185, 185, 185);
+}

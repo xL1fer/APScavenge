@@ -1,0 +1,70 @@
+<form method="post" enctype="multipart/form-data" id="dashboard-users-grid-form">
+    {% csrf_token %}
+
+    <span class="input-custom">
+        <span style="white-space: nowrap;">
+            <select name="{{ select_type_form.filter_select.name }}">
+                <option value="all" {% if select_type_form.filter_select.value == "all" %}selected{% endif %}>All</option>
+                <option value="secure" {% if select_type_form.filter_select.value == "secure" %}selected{% endif %}>Secure</option>
+                <option value="vulnerable" {% if select_type_form.filter_select.value == "vulnerable" %}selected{% endif %}>Vulnerable</option>
+            </select>
+            <svg style="position:relative; left: -40px; pointer-events: none;" width="20" fill="black" aria-hidden="true" focusable="false" data-prefix="far" data-icon="chevron-down" class="svg-inline--fa fa-chevron-down " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M239 401c9.4 9.4 24.6 9.4 33.9 0L465 209c9.4-9.4 9.4-24.6 0-33.9s-24.6-9.4-33.9 0l-175 175L81 175c-9.4-9.4-24.6-9.4-33.9 0s-9.4 24.6 0 33.9L239 401z"></path></svg>
+        </span>
+        
+        <span style="white-space: nowrap;">
+            {{ search_grid_form.search_field }}
+            <svg style="position:relative; left: -40px; pointer-events: none;" width="20" fill="black" aria-hidden="true" focusable="false" data-prefix="fal" data-icon="magnifying-glass" class="svg-inline--fa fa-magnifying-glass " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M384 208A176 176 0 1 0 32 208a176 176 0 1 0 352 0zM343.3 366C307 397.2 259.7 416 208 416C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208c0 51.7-18.8 99-50 135.3L507.3 484.7c6.2 6.2 6.2 16.4 0 22.6s-16.4 6.2-22.6 0L343.3 366z"></path></svg>
+            <input type="submit" style="display: none;">
+        </span>
+    </span>
+
+    <span class="custom-paginator" style="white-space: nowrap;">
+        <input type="hidden" name="cur_page" id="form-current-page" value="{{ users_info.1 }}">
+        <input type="hidden" name="max_page" id="form-max-page" value="{{ users_info.2 }}">
+        <span class="prevent-select">
+            <a{% if users_info.1|add:"0" < 2 %} class="a-disabled"{% endif %} onclick="changeTablePage(-1);"><svg fill="grey" width="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 612"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M9.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l192 192c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L77.3 256 246.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-192 192z"/></svg></a>
+            <span class="mx-4">{{ users_info.1 }} / {{ users_info.2 }}</span>
+            <a{% if users_info.1|add:"0" >= users_info.2 %} class="a-disabled"{% endif %} onclick="changeTablePage(1);"><svg fill="grey" width="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 612"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2024 Fonticons, Inc.--><path d="M310.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-192 192c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L242.7 256 73.4 86.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l192 192z"/></svg></a>
+        </span>
+    </span>
+
+    <div class="container-fluid custom-grid" style="padding: 0 2px;">
+        {% for user_info in users_info.0 %}
+        {% if forloop.counter0|divisibleby:3 %}
+        <div class="row">
+        {% endif %}
+            <div class="col">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="title">&lt;{{ user_info.0 }}&gt;</span>
+                    {% if user_info.1 == "Secure" %}
+                    <span style="color: rgb(80, 202, 80)">{{ user_info.1 }}</span>
+                    {% else %}
+                    <span style="color: rgb(226, 96, 96)"><b>{{ user_info.1 }}</b></span>
+                    {% endif %}
+                </div>
+                {% if user_info.2 != "" %}
+                <div class="mt-4">
+                    {% if user_info.2 == "n/a" %}
+                    <span>Not personnel</span>
+                    {% else %}
+                    <a href="{{ user_info.2 }}" target="_blank">Personnel</a>
+                    {% endif %}
+                </div>
+                {% elif parsing_email == True %}
+                <button class="mt-4 action-disabled">Fetch info</button>
+                {% else %}
+                <button id="{{ user_info.0 }}" class="mt-4">Fetch info</button>
+                {% endif %}
+            </div>
+        {% if forloop.last or forloop.counter|divisibleby:3 %}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% if users_info.0|length == 0 %}
+    <div class="center">
+        <svg class="mb-4" fill="#ef9a38" width="70" aria-hidden="true" focusable="false" data-prefix="fal" data-icon="info-circle" class="svg-inline--fa fa-info-circle fa-w-16 " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 40c118.621 0 216 96.075 216 216 0 119.291-96.61 216-216 216-119.244 0-216-96.562-216-216 0-119.203 96.602-216 216-216m0-32C119.043 8 8 119.083 8 256c0 136.997 111.043 248 248 248s248-111.003 248-248C504 119.083 392.957 8 256 8zm-36 344h12V232h-12c-6.627 0-12-5.373-12-12v-8c0-6.627 5.373-12 12-12h48c6.627 0 12 5.373 12 12v140h12c6.627 0 12 5.373 12 12v8c0 6.627-5.373 12-12 12h-72c-6.627 0-12-5.373-12-12v-8c0-6.627 5.373-12 12-12zm36-240c-17.673 0-32 14.327-32 32s14.327 32 32 32 32-14.327 32-32-14.327-32-32-32z"></path></svg>
+        <h5>No users found</h5>
+    </div>
+    {% endif %}
+</form>

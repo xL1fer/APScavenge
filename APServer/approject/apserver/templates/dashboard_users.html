@@ -1,0 +1,18 @@
+{% extends "dashboard.html" %}
+{% load static %}
+
+{% block dashboard_content %}
+
+<div class="mt-5">
+    <div class="page-indicator">
+        APScavenge <b>> 
+        <span class="underlined">Dashboard</b></span>
+        > Users
+        <span class="sidebar-hidden" id="sidebar-toggle-container"> > <button id="button-sidebar-toggle">Toggle Sidebar</button></span>
+    </div>
+
+    {% include "dashboard_users_grid.html" %}
+</div>
+
+{% endblock %}
+

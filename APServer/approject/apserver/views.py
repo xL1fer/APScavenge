@@ -6,7 +6,7 @@ from django.contrib.auth import authenticate, login, logout # import Django buil
 
 from django.db.models import Q
 from .models import Seizure, InfoHistory, PasswordHash, AgentStatus#, User
-from .forms import LoginForm, PageItemsSelectForm, SelectTableForm, SearchTableForm, SelectStatsAreaForm
+from .forms import LoginForm, PageItemsSelectForm, SelectTableForm, SearchTableForm, SelectForm
 from .serializers import SeizureSerializer, InfoHistorySerializer, PasswordHashSerializer, AgentStatusSerializer
 
 from rest_framework.response import Response
@@ -33,6 +33,8 @@ from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.x509 import load_pem_x509_certificate
 
+from apserver.emailparser import emailparser
+
 # Create your views here.
 
 #from .tasks import init_tasks
@@ -57,6 +59,8 @@ g_action_start = 1 << 0
 g_action_stop = 1 << 1
 g_action_clear = 1 << 2
 g_action_await = 1 << 3
+
+g_parsing_email = False
 
 #####################################
 # Custom Django Template Filters    #
@@ -132,7 +136,7 @@ def table_data_handler(request, model_class, select_table_form, search_table_for
             items_per_page = int(page_items_select_form.cleaned_data['page_items'])
 
         # NOTE: Since the search_table_form.filter_field select has no default values, as they are only set directly in the dashboard_data_table.html template,
-        #       we need to set them here, otherwise the form is considered invalid for cona values that do not correspond to any default
+        #       we need to set them here, otherwise the form is considered invalid for containing values that do not correspond to any default
         filter_field = request.POST.get('filter_field')
         if filter_field in table_data["fields"]:    # Ensure that the filter_field is not forged
             search_table_form.fields['filter_field'].choices = [(filter_field, filter_field)]
@@ -185,6 +189,9 @@ def update_active_agents():
 
 def is_int(arg):
     return type(arg) == int or type(arg) == str and arg.isdigit()
+
+def to_int(arg):
+    return int(arg) if is_int(arg) else None
 
 def public_key_encryption(data_dict):
     global public_key
@@ -269,7 +276,7 @@ class DashboardView(View):
         model_class = get_model_class(request, select_table_form, 'requestModel')
         table_data = table_data_handler(request, model_class, select_table_form, search_table_form, page_items_select_form)
         
-        return render(request, 'dashboard_data.html', {"table_data": table_data, "select_table_form": select_table_form, "search_table_form": search_table_form, "page_items_select_form": page_items_select_form})
+        return render(request, 'dashboard_data.html', {'table_data': table_data, 'select_table_form': select_table_form, 'search_table_form': search_table_form, 'page_items_select_form': page_items_select_form})
 
     def post(self, request):
         assert isinstance(request, HttpRequest)
@@ -349,7 +356,7 @@ class DashboardStatsView(View):
         if not authentication_handler(request):
             return redirect('login')
         
-        select_stats_area_form = SelectStatsAreaForm()
+        select_stats_area_form = SelectForm()
 
         available_areas = ['_global_']
         available_areas.extend(list(InfoHistory.objects.values_list('area', flat=True).distinct()))
@@ -362,14 +369,92 @@ class DashboardStatsView(View):
             return redirect('login')
         
         if request.POST.get('ajaxStatsUpdate'):
-            return render(request, 'dashboard_stats_area.html', {'areas_stats': areas_stats_handler(request.POST.get('filter_area'))})
+            return render(request, 'dashboard_stats_area.html', {'areas_stats': areas_stats_handler(request.POST.get('filter_select'))})
         
-        select_stats_area_form = SelectStatsAreaForm()
+        select_stats_area_form = SelectForm()
 
         available_areas = ['_global_']
         available_areas.extend(list(InfoHistory.objects.values_list('area', flat=True).distinct()))
 
         return render(request, 'dashboard_stats.html', {'select_stats_area_form': select_stats_area_form, 'areas_stats': areas_stats_handler(), 'available_areas': available_areas})
+
+def users_info_handler(cur_page=None, search_field=None, filter_select=None):
+    users_info = []
+    items_per_page = 12
+    if cur_page == None:
+        cur_page = 1
+
+    filter_params = {f"email__contains": search_field if search_field is not None else ''}
+    if filter_select is not None and filter_select != 'all':
+        filter_params['infohistory__passwordhash__isnull'] = False
+
+    seizures = Seizure.objects.filter(**filter_params).distinct()
+    if filter_select == 'secure':
+        seizures = Seizure.objects.exclude(pk__in=seizures).distinct()
+
+    paginator = Paginator(seizures, items_per_page)
+
+
+    if cur_page < paginator.page_range.start:
+        cur_page = paginator.page_range.start
+    elif cur_page >= paginator.page_range.stop:
+        cur_page = paginator.page_range.stop - 1
+
+    grid_max_page = paginator.page_range.stop - 1
+
+    for seizure in paginator.page(cur_page).object_list:
+        if InfoHistory.objects.filter(seizure_email__email=seizure.email, passwordhash__isnull=False).exists():
+            users_info.append([seizure.email, "Vulnerable", seizure.user_data])
+        else:
+            users_info.append([seizure.email, "Secure", seizure.user_data])
+
+    return [users_info, cur_page, grid_max_page]
+
+class DashboardUsersView(View):
+    """Dashboard users page render handler"""
+
+    def get(self, request):
+        assert isinstance(request, HttpRequest)
+        if not authentication_handler(request):
+            return redirect('login')
+        
+        global g_parsing_email
+        
+        select_type_form = SelectForm()
+        search_grid_form = SearchTableForm()
+        
+        return render(request, 'dashboard_users.html', {'users_info': users_info_handler(), 'select_type_form': select_type_form, 'search_grid_form': search_grid_form, "parsing_email": g_parsing_email})
+    
+    def post(self, request):
+        assert isinstance(request, HttpRequest)
+        if not authentication_handler(request):
+            return redirect('login')
+        
+        global g_parsing_email
+        
+        select_type_form = SelectForm(request.POST)
+        filter_select = request.POST.get('filter_select')
+        valid_choices = ['all', 'secure', 'vulnerable']
+        if filter_select in valid_choices:    # Ensure that filter_select is not forged
+            select_type_form.fields['filter_select'].choices = [(filter_select, filter_select)]
+
+        search_grid_form = SearchTableForm(request.POST)
+        search_field = request.POST.get('search_field')
+
+        if request.POST.get('ajaxPaginatorUpdate'):
+            return render(request, 'dashboard_users_grid.html', {'users_info': users_info_handler(to_int(request.POST.get('cur_page')), search_field, filter_select), 'select_type_form': select_type_form, 'search_grid_form': search_grid_form, 'parsing_email': g_parsing_email})
+        
+        if request.POST.get('ajaxGridUpdate'):
+            if not g_parsing_email:
+                g_parsing_email = True
+                seizure = Seizure.objects.get(email=request.POST.get('userEmail'))
+                seizure.user_data = emailparser.parse_email(request.POST.get('userEmail'))
+                seizure.save()
+                g_parsing_email = False
+
+            return render(request, 'dashboard_users_grid.html', {'users_info': users_info_handler(to_int(request.POST.get('cur_page')), search_field, filter_select), 'select_type_form': select_type_form, 'search_grid_form': search_grid_form, 'parsing_email': g_parsing_email})
+
+        return render(request, 'dashboard_users.html', {'users_info': users_info_handler(to_int(request.POST.get('cur_page')), search_field, filter_select), 'select_type_form': select_type_form, 'search_grid_form': search_grid_form, 'parsing_email': g_parsing_email})
 
 class InfrastructureView(View):
     """Infrastructure page render handler"""
@@ -382,12 +467,14 @@ class InfrastructureView(View):
         update_active_agents()
         agentstatus_objects = AgentStatus.objects.all()
         
-        return render(request, 'infrastructure.html', {"agentstatus_objects": agentstatus_objects})
+        return render(request, 'infrastructure.html', {'agentstatus_objects': agentstatus_objects})
 
     def post(self, request):
         assert isinstance(request, HttpRequest)
         if not authentication_handler(request):
             return redirect('login')
+        
+        global g_action_start, g_action_stop, g_action_await
         
         update_active_agents()
         agentstatus_objects = AgentStatus.objects.all()
@@ -467,9 +554,9 @@ class InfrastructureView(View):
                 """
                 
         if request.POST.get('ajaxGridUpdate'):
-            return render(request, 'infrastructure_grid.html', {"agentstatus_objects": agentstatus_objects})
+            return render(request, 'infrastructure_grid.html', {'agentstatus_objects': agentstatus_objects})
 
-        return render(request, 'infrastructure.html', {"agentstatus_objects": agentstatus_objects})
+        return render(request, 'infrastructure.html', {'agentstatus_objects': agentstatus_objects})
     
 '''
 class InfrastructureView(View):
@@ -598,6 +685,8 @@ class InfrastructureAgentView(View):
         if not authentication_handler(request):
             return redirect('login')
         
+        global g_action_clear
+        
         update_active_agents()
         
         if AgentStatus.objects.filter(area=area).exists():
@@ -678,7 +767,7 @@ def insert_dummy_data(request):
         Seizure(email=f"dummy{i}@realm").save()
 
     for i in range(dummy_count):
-        info_history = InfoHistory(user_type=f"Dummy Type {i}", user_info_id=-1, area=f"dummy", seizure_email_id=f"dummy{i}@realm")
+        info_history = InfoHistory(area=f"dummy", seizure_email_id=f"dummy{i}@realm")
         info_history.save()
 
         if i % 2:
@@ -741,9 +830,9 @@ class CentralHeartbeatAPI(APIView):
                     agentstatus.pending_request = 0
                 agentstatus.save()
 
-                return Response(public_key_encryption({"last_heartbeat": str(agentstatus.last_heartbeat), "pending_request": pending_request}), status=status.HTTP_200_OK)
+                return Response(public_key_encryption({'last_heartbeat': str(agentstatus.last_heartbeat), 'pending_request': pending_request}), status=status.HTTP_200_OK)
             else:
-                return Response(public_key_encryption({"message": "Wrong area agent id."}), status=status.HTTP_400_BAD_REQUEST)
+                return Response(public_key_encryption({'message': 'Wrong area agent id.'}), status=status.HTTP_400_BAD_REQUEST)
 
         serializer = AgentStatusSerializer(data=plain_data)
         if serializer.is_valid():

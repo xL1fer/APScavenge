@@ -14,9 +14,9 @@
         >
         <form method="post" enctype="multipart/form-data" style="display: inline-block;" id="dashboard-stats-form">
             {% csrf_token %}
-            <select name="{{ select_stats_area_form.filter_area.name }}">
+            <select name="{{ select_stats_area_form.filter_select.name }}">
                 {% for area in available_areas %}
-                    <option value="{{ area }}" {% if area == select_stats_area_form.filter_area.value %}selected{% endif %}>{{ area }}</option>
+                    <option value="{{ area }}" {% if area == select_stats_area_form.filter_select.value %}selected{% endif %}>{{ area }}</option>
                 {% endfor %}
             </select>
         </form>

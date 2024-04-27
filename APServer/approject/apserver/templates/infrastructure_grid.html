@@ -1,6 +1,6 @@
 <form method="post" enctype="multipart/form-data" id="infrastructure-grid-form">
     {% csrf_token %}
-    <div class="container custom-grid">
+    <div class="container-fluid custom-grid" style="padding: 0 2px;">
         {% for agentstatus in agentstatus_objects %}
         {% if forloop.counter0|divisibleby:3 %}
         <div class="row">

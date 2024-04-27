@@ -16,6 +16,7 @@
     /* Varaibles declaration for external javascript file */
     const dashboardURL = '{% url "dashboard" %}';
     const dashboardStatsURL = '{% url "dashboard-stats" %}';
+    const dashboardUsersURL = '{% url "dashboard-users" %}';
     let requestModel = '{{ table_data.current_model }}';
     let areasStatsData = null;
 </script>
@@ -24,6 +25,7 @@
     <ul id="ul-sidebar">
         <a href="{% url 'dashboard' %}"><li>Data</li></a>
         <a href="{% url 'dashboard-stats' %}"><li>Stats</li></a>
+        <a href="{% url 'dashboard-users' %}"><li>Users</li></a>
         <a class="sidebar-hidden" id="a-sidebar-toggle"><li style="margin-top: 50%">Close</li></a>
     </ul>
 </div>

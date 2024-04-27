@@ -28,11 +28,12 @@ def area_validator(value):
 
 class Seizure(models.Model):
     email = models.CharField(primary_key=True, max_length=128, null=False, blank=False)
+    user_data = models.CharField(max_length=256, blank=True, default="")
 
 class InfoHistory(models.Model):
     id = models.BigAutoField(primary_key=True)
-    user_type = models.CharField(max_length=64, blank=True)
-    user_info_id = models.BigIntegerField(null=True, blank=True)
+    #user_type = models.CharField(max_length=64, blank=True)
+    #user_info_id = models.BigIntegerField(null=True, blank=True)
     capture_time = models.DateTimeField(auto_now_add=True) #(default=timezone.now, auto_now_add=False)
     area = models.CharField(max_length=64, null=False, blank=False, validators=[area_validator])
     seizure_email = models.ForeignKey(Seizure, on_delete=models.CASCADE)
