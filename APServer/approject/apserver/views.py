@@ -384,13 +384,17 @@ def users_info_handler(cur_page=None, search_field=None, filter_select=None):
     if cur_page == None:
         cur_page = 1
 
-    filter_params = {f"email__contains": search_field if search_field is not None else ''}
+    #filter_params = {f"email__contains": search_field if search_field is not None else ''}
+    filter_params = {}
     if filter_select is not None and filter_select != 'all':
         filter_params['infohistory__passwordhash__isnull'] = False
 
     seizures = Seizure.objects.filter(**filter_params).distinct()
     if filter_select == 'secure':
         seizures = Seizure.objects.exclude(pk__in=seizures).distinct()
+
+    if search_field is not None and search_field != '':
+        seizures = seizures.filter(email__contains=search_field).distinct()
 
     paginator = Paginator(seizures, items_per_page)
 
