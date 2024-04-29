@@ -9,6 +9,7 @@ pip install psycopg2
 pip install bs4
 pip install selenium
 pip install lxml
+pip install apscheduler
 
 python3 manage.py makemigrations --no-input
 python3 manage.py migrate --no-input
