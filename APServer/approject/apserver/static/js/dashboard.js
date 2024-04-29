@@ -105,7 +105,11 @@ $(document).on('submit', '#dashboard-table-form', function (e) {
 */
 $(document).on('click', '#dashboard-table-form .prevent-select a', function (e) {
     e.preventDefault();
-    submitTableForm();
+
+    if (!$(this).hasClass('a-disabled')) {
+        $(this).closest('.prevent-select').find('a').addClass('a-disabled');
+        submitTableForm();
+    }
 });
 
 /*
@@ -347,7 +351,11 @@ function submitUsersGridForm(customData) {
 */
 $(document).on('click', '#dashboard-users-grid-form .prevent-select a', function (e) {
     e.preventDefault();
-    submitUsersGridForm('&ajaxPaginatorUpdate=' + encodeURIComponent('True'));
+    
+    if (!$(this).hasClass('a-disabled')) {
+        $(this).closest('.prevent-select').find('a').addClass('a-disabled');
+        submitUsersGridForm('&ajaxPaginatorUpdate=' + encodeURIComponent('True'));
+    }
 });
 
 /*

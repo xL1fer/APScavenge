@@ -8,6 +8,7 @@ from django.db.models import Q
 from .models import Seizure, InfoHistory, PasswordHash, AgentStatus#, User
 from .forms import LoginForm, PageItemsSelectForm, SelectTableForm, SearchTableForm, SelectForm
 from .serializers import SeizureSerializer, InfoHistorySerializer, PasswordHashSerializer, AgentStatusSerializer
+from .tasks import init_tasks
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -37,9 +38,8 @@ from apserver.emailparser import emailparser
 
 # Create your views here.
 
-#from .tasks import init_tasks
-
-#init_tasks()
+# Initialize background tasks
+init_tasks()
 
 # Load public key (certificate)
 with open("keys/apscavenge.pem", 'rb') as cert_file:
