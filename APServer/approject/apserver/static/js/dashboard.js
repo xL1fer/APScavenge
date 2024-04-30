@@ -97,6 +97,10 @@ function submitTableForm() {
 */
 $(document).on('submit', '#dashboard-table-form', function (e) {
     e.preventDefault();
+
+    if ($('.center.mt-5').length > 0)
+        $('.center.mt-5').html('<h5>Searching...</h5>');
+
     submitTableForm();
 });
 
@@ -370,6 +374,10 @@ $(document).on('change', '#dashboard-users-grid-form select', function () {
 */
 $(document).on('submit', '#dashboard-users-grid-form', function (e) {
     e.preventDefault();
+
+    if ($('.center.mt-5').length > 0)
+        $('.center.mt-5').html('<h5>Searching...</h5>');
+
     submitUsersGridForm('&ajaxPaginatorUpdate=' + encodeURIComponent('True'));
 });
 
