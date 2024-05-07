@@ -12,7 +12,7 @@ def email_parser_task():
 
 def init_tasks():
     scheduler = BackgroundScheduler()
-    job = scheduler.add_job(email_parser_task, 'interval', minutes=1)
+    job = scheduler.add_job(email_parser_task, 'interval', minutes=2)
     scheduler.start()
 
     #print("Tasks initialized.")
