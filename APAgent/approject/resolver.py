@@ -165,7 +165,7 @@ def private_key_decryption(data):
     return plain_data
 
 def start_attack():
-    global g_central_ip, g_agent_id, g_agent_area, g_is_attacking, g_attack_process, g_queue
+    global g_ap_iface, g_central_ip, g_agent_id, g_agent_area, g_is_attacking, g_attack_process, g_queue
 
     if g_is_attacking:
         return
@@ -174,7 +174,7 @@ def start_attack():
     while not g_queue.empty():
         g_queue.get()
 
-    g_attack_process = Process(target=pymana.main, args=("wlan0", g_agent_area, "eduroam", g_agent_area, g_central_ip, g_queue,))
+    g_attack_process = Process(target=pymana.main, args=(g_ap_iface, g_agent_area, "eduroam", g_agent_area, g_central_ip, g_queue,))
     g_attack_process.start()
 
     message = g_queue.get()
