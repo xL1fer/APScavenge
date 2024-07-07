@@ -1,0 +1,38 @@
+#!/bin/sh
+
+set -e
+
+if ! openssl genrsa -out apscavenge.key 8192 2>&1
+then
+    echo Could not create certificate. Openssl output was: >&2
+    cat $TMPOUT >&2
+    exit 1
+fi
+
+if ! openssl req -new -sha256 -key apscavenge.key -config apscavenge.cnf -out apscavenge.csr
+then
+    echo Could not create certificate. Openssl output was: >&2
+    cat $TMPOUT >&2
+    exit 1
+fi
+
+if ! openssl req -x509 -sha256 -days 365 -key apscavenge.key -in apscavenge.csr \
+    -out apscavenge.pem
+then
+    echo Could not create certificate. Openssl output was: >&2
+    cat $TMPOUT >&2
+    exit 1
+fi
+
+chmod 600 apscavenge.key
+
+
+# copy generated keys to both modules
+cp apscavenge.key APServer/approject/keys
+cp apscavenge.pem APServer/approject/keys
+cp apscavenge.key APAgent/approject/keys
+cp apscavenge.pem APAgent/approject/keys
+
+rm apscavenge.key
+rm apscavenge.pem
+rm apscavenge.csr
