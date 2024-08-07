@@ -1,0 +1,4 @@
+[submodule "APAgent/approject/pymana"]
+	path = APAgent/approject/pymana
+	url = https://github.com/xL1fer/Pymana.git
+	branch = apscavenge
