@@ -1,3 +1,0 @@
-[submodule "APAgent/approject/pymana/hostapd-mana"]
-	path = APAgent/approject/pymana/hostapd-mana
-	url = https://github.com/sensepost/hostapd-mana.git
