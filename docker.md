@@ -48,88 +48,96 @@ sudo usermod -aG docker $USER
 sudo gpasswd --delete $USER docker
 ```
 
-#### Ubuntu references
+### Ubuntu references
 [https://docs.docker.com/engine/install/ubuntu/]
 
-#### Kali references
+### Kali references
 [https://malfunction-grinds.medium.com/how-to-install-docker-and-docker-compose-on-kali-linux-2ecd69c67ee9]
 [https://www.kali.org/docs/containers/installing-docker-on-kali/]
 
-# Start the containers
+# Docker commands
+
+## Start docker compose containers
 
 ```
 sudo docker compose up -d
 sudo docker compose up --build -d # rebuild containers if already created
 ```
 
-# Stop the containers
+## Stop docker compose containers
 
 ```
 sudo docker compose down
 ```
 
-# Check networks
-
-```
-sudo docker network ls
-```
-
-# Check volumes
-
-```
-sudo docker volume ls
-sudo docker volume inspect apserver_static
-sudo ls -la /var/lib/docker/volumes/apserver_static/_data
-```
-
-## Another way of checking data
-
-```
-sudo docker exec -it apserver_django_gunicorn_1 ls -la ../static
-```
-
-# Remove volume
-
-```
-sudo docker volume remove apserver_static
-```
-
-# Delete images
-
-```
-sudo docker images
-sudo docker rmi [image_id]
-sudo docker rmi apserver_django_gunicorn;sudo docker rmi apserver_nginx
-```
-
-# Delete volumes not being used
-
-```
-sudo docker volume prune
-```
-
-# Check current containers
+## Check current containers
 
 ```
 sudo docker ps
 ```
 
-# Check container erros
+## Stop single container
 
 ```
-sudo docker logs [container_name] (apserver_django_gunicorn_1)
+sudo docker stop [container_name]
 ```
 
-# Create django super user inside docker container
+## Check networks
 
 ```
-sudo docker exec -it apserver_django_gunicorn_1 python manage.py createsuperuser
+sudo docker network ls
 ```
 
-# Shutdown and clear created container files and images
+## Check volumes
+
+```
+sudo docker volume ls
+sudo docker volume inspect [volume_name]
+sudo ls -la /var/lib/docker/volumes/[volume_name]/_data
+```
+
+### Another way of checking data
+
+```
+sudo docker exec -it [container_name] ls -la ../static
+```
+
+## Remove volume
+
+```
+sudo docker volume remove [volume_name]
+```
+
+## Delete images
+
+```
+sudo docker images
+sudo docker rmi [image_id]
+(sudo docker rmi [image_id];sudo docker rmi [image_id])
+```
+
+## Delete volumes not being used
+
+```
+sudo docker volume prune
+```
+
+## Check container erros
+
+```
+sudo docker logs [container_name]
+```
+
+## Create django super user inside docker container
+
+```
+sudo docker exec -it [container_name] python manage.py createsuperuser
+```
+
+## Shutdown and clear docker compose containers' files and images
 
 ```
 sudo docker compose down
-sudo docker volume remove apserver_static
-sudo docker rmi apserver_django_gunicorn;sudo docker rmi apserver_nginx
+sudo docker volume remove [volume_name]
+sudo docker rmi [image_id]
 ```

@@ -14,7 +14,7 @@ Converting files within a root directory to unix format can be done with the fol
 find . -type f -exec dos2unix {} \;
 ```
 
-## Running central server on a specific port (8080 for example)
+## Running the central server module on a specific port (8080 for example)
 
 ### APServer
 
@@ -46,7 +46,7 @@ find . -type f -exec dos2unix {} \;
 		|	CENTRAL_IP='192.168.1.79:8080'
 		|
 		
-## Running agent on a specific port (8080 for example)
+## Running the agent module on a specific port (8080 for example)
 
 ### APAgent
 
