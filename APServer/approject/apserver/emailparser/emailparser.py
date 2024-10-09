@@ -47,7 +47,7 @@ def parse_email(email):
 
         # find all <a> elements with href containing "/pt/p/"
         personal_pages = soup.find_all('a', href=lambda href: href and "/pt/p/" in href)
-        associated_email = soup.find_all('p', class_='sc-gqjmRU gndnXb')    # ensure that the personal page really corresponds to the email we are searching for (needed in the case of "cribeiro@ua.pt", for example)
+        associated_email = soup.find_all('p', class_='sc-gqjmRU gndnXb')    # ensure that the personal page really corresponds to the email we are searching for (needed in case there are email instances like "myname@ua.pt" and "myname2@ua.pt")
 
         # print the href attribute of matching links
         for i in range (len(personal_pages)):
@@ -163,4 +163,4 @@ if __name__ == '__main__':
     if (user_count > 0):
         print(f"User emails: {user_count} ; Vulnerable users: {vulnerable_count} -> {(vulnerable_count / user_count * 100) :.2f} %")
 
-    #parse_email('joanarcorreia@ua.pt')
+    #parse_email('identifier@ua.pt')
