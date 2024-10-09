@@ -4,6 +4,8 @@ APScavenge is a tool that scavenges a delimited area for data extraction. In thi
 
 APScavenge comprises two main modules that are responsible for creating a centralized infrastructure architecture. APServer is the name of the central server module that stores gathered data and provides dashboard views for staff members. The received data is sent by the APAgent module, corresponding to various instances scattered through a handful of independent hardware agents. These mediums run Evil Twin attacks to verify users' susceptibilities to this type of attack.
 
+To download this project and all its dependencies, you can use ``git clone --recursive [repository link]``.
+
 ## Notes
 
 It is recommended to ensure all files are in Unix format, the dos2unix package can be used:
