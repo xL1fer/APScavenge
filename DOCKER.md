@@ -135,6 +135,12 @@ sudo docker logs [container_name]
 sudo docker exec -it [container_name] python manage.py createsuperuser
 ```
 
+## Remove stopped containers, networks, images and build cache
+
+```
+sudo docker system prune -f
+```
+
 ## Shutdown and clear docker compose containers' files and images
 
 ```
