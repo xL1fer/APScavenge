@@ -9,8 +9,8 @@ https://www.python.org/downloads/
 
 Create venv:
 ```
-$ cd /APScavenge
-$ python -m venv venv
+cd /APScavenge
+python -m venv venv
 ```
 
 Activate/deactivate venv:
@@ -23,29 +23,29 @@ venv\Scripts\deactivate.bat
 
 Update packages:
 ```
-$ sudo apt-get update
-$ sudo apt-get -y upgrade
+sudo apt-get update
+sudo apt-get -y upgrade
 ```
 
 Install python3:
 ```
-$ python3 -V
-$ sudo apt-get install -y python3-pip
+python3 -V
+sudo apt-get install -y python3-pip
 ```
 
 Install venv:
 ```
-$ sudo apt-get install -y python3-venv
+sudo apt-get install -y python3-venv
 ```
 
 Create venv:
 ```
-$ cd /APScavenge
-$ python -m venv venv
+cd /APScavenge
+python -m venv venv
 ```
 
 Activate/deactivate venv:
 ```
-$ source venv/bin/activate
-$ deactivate
+source venv/bin/activate
+deactivate
 ```
