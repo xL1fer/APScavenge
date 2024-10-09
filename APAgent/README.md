@@ -56,13 +56,13 @@ Docker was used to provide an automated way to start the APAgent module. Having 
 
 ## Running manually
 
-It is recommended to use a python virtual environment when running this module manually. The venv can be created at the root directory ```"APScavenge/"```. This should be used during development.
+It is recommended to use a Python virtual environment when running this module manually. The venv can be created at the root directory ```"APScavenge/"```. This should be used during development.
 
 With the virtual environment created and started, you just need to run the command ``sudo flask --app resolver run --host=0.0.0.0`` (be sure to be in the same directory as ``resolver.py``) to start the agent.
 
 ## Required Packages
 
-The following python packages are required to run the APAgent module:
+The following Python packages are required to run the APAgent module:
 
 ```
 pip install python-dotenv

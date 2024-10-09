@@ -29,19 +29,23 @@ To run the central server module on the correct server ip and on a specific port
 		|
 ```
 
+You should also be aware of some environment variables, as they need to be changed for your run. The most important ones are the ``DJANGO_DEBUG`` and ``DJANGO_SECRET_KEY`` variables. Both can be found within the ``approject/.env.local`` file of the APServer module directory, which is imported in ``approject/approject/settings.py``. Debug should always be set to False during production and the secret should also be updated as the current one is publicly available.
+
+By default, the server is set to run with a simple SQLite database for testing and development reasonings. Nonetheless, heading to the ``approject/approject/settings.py`` file, you can go to the ``# Database`` section, comment out the SQLite database definition, and uncomment the Postgresql version to make use of this later database technology. You should also change the Postgres settings, although if you are running using the provided Docker method, the container isolation should make it difficult for outsiders to communicate with the Postgres database.
+
 ## Docker Compose
 
 Docker was used to provide an automated way to start the APServer module. Having Docker and Docker Compose installed in the system, you just need to run the ``docker_run.sh`` file to start the server. This is commended when running in production mode.
 
 ## Running manually
 
-It is recommended to use a python virtual environment when running this module manually. The venv can be created at the root directory ```"APScavenge/"```. This should be used during development.
+It is recommended to use a Python virtual environment when running this module manually. The venv can be created at the root directory ```"APScavenge/"```. This should be used during development.
 
 With the virtual environment created and started, you just need to run the command ``python manage.py runserver 0.0.0.0:8000`` (be sure to be in the same directory as ``manage.py``) to start the server.
 
 ## Required Packages
 
-The following python packages are required to run the APServer module:
+The following Python packages are required to run the APServer module:
 
 ```
 pip install django
